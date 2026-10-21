@@ -109,7 +109,7 @@ export function PlayerGame({ sessionId, secret, onLeave }: { sessionId: string; 
             : isMc
               ? "Choose your answer"
               : "Press the colour of the right answer";
-  const tone = notice?.roundId === roundId && notice ? colors.warn : lockedOut && lastAnswer?.isCorrect === false ? colors.bad : answered ? colors.good : colors.muted;
+  const tone = notice?.roundId === roundId && notice ? colors.warn : lockedOut && lastAnswer?.isCorrect === false ? colors.bad : answered ? colors.text : colors.muted;
 
   return (
     <Screen style={{ paddingHorizontal: 16 }}>
@@ -184,7 +184,7 @@ export function PlayerGame({ sessionId, secret, onLeave }: { sessionId: string; 
                   {!isMc && <Text style={local.answerName}>{c.name}</Text>}
                   {chosen && !pending && (
                     <View style={local.badge}>
-                      {lastAnswer?.isCorrect === false ? <X color="white" size={16} /> : <Check color="white" size={16} />}
+                      {lastAnswer?.isCorrect === false ? <X color="white" size={16} /> : lastAnswer?.isCorrect === true ? <Check color="white" size={16} /> : <Lock color="white" size={16} />}
                     </View>
                   )}
                 </Pressable>

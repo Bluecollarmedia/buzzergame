@@ -162,7 +162,7 @@ export function PlayerGame({ sessionId, secret, onLeave }: { sessionId: string; 
                             ? "Choose your answer"
                             : "Press the colour of the right answer"
               }
-              tone={notice?.roundId === roundId && notice ? "warn" : lockedOut && lastAnswer?.isCorrect === false ? "bad" : answered ? "good" : "neutral"}
+              tone={notice?.roundId === roundId && notice ? "warn" : lockedOut && lastAnswer?.isCorrect === false ? "bad" : "neutral"}
             />
             <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-3" role="group" aria-label="Answers">
               {ANSWER_COLORS.map((c, i) => {
@@ -187,7 +187,7 @@ export function PlayerGame({ sessionId, secret, onLeave }: { sessionId: string; 
                     {!isMc && <span className="mt-1 text-sm font-medium text-white/80">{c.name}</span>}
                     {chosen && !pending && (
                       <span className="absolute right-3 top-3 rounded-full bg-white/25 p-1">
-                        {lastAnswer?.isCorrect === false ? <X className="size-4" aria-hidden /> : <Check className="size-4" aria-hidden />}
+                        {lastAnswer?.isCorrect === false ? <X className="size-4" aria-hidden /> : lastAnswer?.isCorrect === true ? <Check className="size-4" aria-hidden /> : <Lock className="size-4" aria-hidden />}
                       </span>
                     )}
                   </button>
