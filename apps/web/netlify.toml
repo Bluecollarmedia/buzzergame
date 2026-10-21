@@ -1,0 +1,12 @@
+# Netlify settings for the CrowdQuiz website.
+# In the Netlify UI, leave Base directory empty and set Package directory to apps/web.
+# Paths here are relative to the repository root.
+
+[build]
+  command = "pnpm --filter web build"
+  publish = "apps/web/.next"
+
+# Runs the Next.js pages, API routes and proxy as Netlify Functions.
+# Without it Netlify only serves static files and every page returns 404.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
