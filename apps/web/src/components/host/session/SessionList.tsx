@@ -25,7 +25,7 @@ export function SessionList() {
   useEffect(() => {
     getSupabase()
       .from("game_sessions")
-      .select("id, quiz_id, quiz_title, mode, status, room_code, question_count, created_at, started_at, ended_at, participants(count)")
+      .select("id, quiz_id, quiz_title, mode, status, room_code, question_count, created_at, started_at, ended_at, participants(id)")
       .order("created_at", { ascending: false })
       .limit(200)
       .then(({ data, error }) => (error ? setError(errorMessage(error)) : setRows(data as SessionRow[])));
@@ -63,7 +63,7 @@ export function SessionList() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{s.quiz_title}</p>
                   <p className="text-sm text-ink-muted">
-                    {GAME_MODE_INFO[s.mode].name} · {formatDateTime(s.created_at)} · {plural(s.participants?.[0]?.count ?? 0, "player")}
+                    {GAME_MODE_INFO[s.mode].name} · {formatDateTime(s.created_at)} · {plural(s.participants?.length ?? 0, "player")}
                   </p>
                 </div>
                 <Badge tone={live ? "success" : s.status === "finished" ? "primary" : "neutral"}>{STATUS_LABELS[s.status]}</Badge>
