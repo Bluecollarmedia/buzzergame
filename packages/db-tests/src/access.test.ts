@@ -70,6 +70,15 @@ describe("access codes", () => {
     expect(Date.parse(r2.startsAt)).toBe(Date.parse(r1.expiresAt));
   });
 
+  it("admin-granted time also stacks after existing access", async () => {
+    const h = await createUser();
+    const a = await newCode({ p_duration_hours: 2 });
+    const r1 = await rpc(host(h), "redeem_access_code", { p_code: a.code });
+    await rpc(host(admin), "admin_grant_entitlement", { p_user_id: h, p_duration_hours: 10 });
+    const [row] = await as<{ ends: Date }>(su, "select max(expires_at) ends from entitlements where user_id = $1 and status = 'active'", [h]);
+    expect(row!.ends.getTime()).toBe(Date.parse(r1.expiresAt) + 10 * 3600 * 1000);
+  });
+
   it("expired access blocks new games but a running game can finish", async () => {
     const h = await createUser();
     await grantAccess(h, 1);
