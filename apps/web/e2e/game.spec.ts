@@ -106,6 +106,16 @@ test("multiple choice game with three players and a projector", async ({ browser
   const projector = await projCtx.newPage();
   await projector.goto(`/present/${tokens.projector_token}`);
   await expect(projector.getByText(tokens.room_code.slice(0, 3))).toBeVisible();
+  const projectorErrors: string[] = [];
+  projector.on("pageerror", (e) => projectorErrors.push(e.message));
+
+  // Music: the projector asks for one click, then plays; the host can mute it remotely.
+  await projector.getByRole("button", { name: "Click to turn on music" }).click();
+  await expect(projector.getByTestId("projector-sound")).toHaveAttribute("aria-pressed", "true");
+  await hostPage.getByRole("button", { name: "Projector music on" }).click();
+  await expect(projector.getByTestId("projector-sound")).toHaveCount(0);
+  await hostPage.getByRole("button", { name: "Projector music off" }).click();
+  await expect(projector.getByTestId("projector-sound")).toHaveAttribute("aria-pressed", "true");
 
   // Players: one by room code, two by QR link.
   const a = await newPlayerPage(browser);
@@ -187,6 +197,7 @@ test("multiple choice game with three players and a projector", async ({ browser
   await hostPage.goto(`/sessions/${mcSessionId}/results`);
   await expect(hostPage.getByRole("cell", { name: "Alice" })).toBeVisible();
 
+  expect(projectorErrors).toEqual([]);
   await Promise.all([a.ctx.close(), b.ctx.close(), c.ctx.close(), projCtx.close(), ctx.close()]);
 });
 

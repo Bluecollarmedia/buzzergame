@@ -63,6 +63,15 @@ The DB test suite fires 40 simultaneous correct presses and checks that there is
 
 Commands are idempotent. The client sends the `stateVersion` it was looking at. If the game has already moved on, for example because of a double click or two host tabs, the command is ignored and returns `applied: false`. The website asks for confirmation before skip, replay, end and remove.
 
+## Projector music
+
+The projector plays music and sound effects. Phones stay silent.
+
+- **Generated live, no audio files.** Everything is synthesised in the browser with the Web Audio API (`apps/web/src/components/projector/audio/GameAudio.ts`). There are no samples or recordings, so there is nothing to license and nothing extra to download.
+- **Builds with the timer.** During a question, intensity is the share of the timer used (`1 - timeLeft / timeLimit`), worked out from the server deadline and the shared server clock. A 15-second and a 30-second question therefore sound the same at the same point, and both reach full intensity at the buzzer. Tempo, filter brightness, drums and a rising sweep all follow intensity. The last 3 seconds tick.
+- **Other scenes.** A calm loop in the lobby and on the final screen, ticks during the countdown, a quieter groove between questions, and one-shot sounds for time up, a buzzer winner and the final results. A paused game is silent.
+- **Turning it on and off.** Browsers block sound until someone clicks, so the projector shows a "Click to turn on music" button once. The speaker icon in the projector header mutes that screen only. The host can turn music off for the game with **Projector music off** in the live controls (`host_set_sound`), or before launch with the "Music and sound effects on the projector" setting (`soundOn`, default on).
+
 ## Joining and reconnecting
 
 - The QR code encodes `https://<site>/j/<joinToken>`. The token is 24 random bytes and cannot be guessed. The 6-character room code is a fallback for typing; looking it up is rate limited.

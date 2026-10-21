@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Crown, Maximize, Minimize, Pause, Trophy, Users } from "lucide-react";
+import { Crown, Maximize, Minimize, Pause, Trophy, Users, Volume2, VolumeX } from "lucide-react";
 import {
   ANSWER_COLORS, GAME_MODE_INFO, brand, buildJoinUrl, createGameApi, errorMessage, formatRoomCode, winners,
   type ProjectorState,
@@ -17,6 +17,7 @@ import { QrCode } from "@/components/game/QrCode";
 import { QuestionStage } from "@/components/game/QuestionStage";
 import { useCountdown } from "@/components/game/useCountdown";
 import { useSessionSync } from "@/components/game/useSessionSync";
+import { useGameAudio } from "./audio/useGameAudio";
 
 /** Read-only, full-screen presentation view. Holds no host credentials. */
 export function Projector({ token }: { token: string }) {
@@ -53,6 +54,7 @@ export function Projector({ token }: { token: string }) {
   const q = state?.question;
   const deadline = s?.status === "question_open" ? q?.deadline : s?.status === "countdown" ? s.phaseEndsAt : null;
   const remaining = useCountdown(clock, deadline, s?.status === "paused" ? s.pausedRemainingMs : undefined);
+  const audio = useGameAudio(state ?? null, clock);
 
   const err = initialError ?? fatal?.message;
   if (err) {
@@ -100,6 +102,17 @@ export function Projector({ token }: { token: string }) {
             <span className="rounded-full bg-white/10 px-3 py-1 font-mono text-white/80">{formatRoomCode(state.join.roomCode)}</span>
           )}
           {connection !== "live" && <ConnectionBadge status={connection} tone="stage" />}
+          {audio.hostOn && (
+            <button
+              onClick={() => void audio.toggle()}
+              className="rounded-lg p-2 text-white/50 hover:bg-white/10 hover:text-white"
+              aria-label={audio.playing ? "Turn sound off" : "Turn sound on"}
+              aria-pressed={audio.playing}
+              data-testid="projector-sound"
+            >
+              {audio.playing ? <Volume2 className="size-5" /> : <VolumeX className="size-5" />}
+            </button>
+          )}
           <button
             onClick={toggleFullscreen}
             className="rounded-lg p-2 text-white/50 hover:bg-white/10 hover:text-white"
@@ -220,6 +233,15 @@ export function Projector({ token }: { token: string }) {
           <div className="m-auto text-center">
             <p className="text-[3vw] font-semibold">This game was cancelled.</p>
           </div>
+        )}
+
+        {audio.needsClick && s.status !== "aborted" && (
+          <button
+            onClick={() => void audio.enable()}
+            className="absolute bottom-[2vw] left-[3vw] z-10 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[max(14px,1vw)] font-medium text-white/80 backdrop-blur hover:bg-white/20"
+          >
+            <Volume2 className="size-4" aria-hidden /> Click to turn on music
+          </button>
         )}
 
         {s.status === "paused" && (

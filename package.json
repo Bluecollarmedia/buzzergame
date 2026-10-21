@@ -10,7 +10,7 @@
     "build": "pnpm --filter @crowdquiz/shared build && pnpm --filter web build",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm --filter @crowdquiz/shared test",
+    "test": "pnpm --filter @crowdquiz/shared test && pnpm --filter web test",
     "test:db": "pnpm --filter @crowdquiz/db-tests test",
     "test:e2e": "pnpm --filter web test:e2e",
     "format": "prettier --write .",

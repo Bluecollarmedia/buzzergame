@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, Check, Copy, Crown, ExternalLink, Flag, Pause, Play, RotateCcw, SkipForward, Square, UserX, X,
+  ArrowRight, Check, Copy, Crown, ExternalLink, Flag, Pause, Play, RotateCcw, SkipForward, Square, UserX, Volume2, VolumeX, X,
 } from "lucide-react";
 import {
   ANSWER_COLORS, GAME_MODE_INFO, STATUS_LABELS, allowedHostCommands, buildJoinUrl, buildProjectorUrl, errorMessage,
@@ -39,6 +39,7 @@ export function HostControl({ sessionId }: { sessionId: string }) {
   const [pending, setPending] = useState<HostCommand | null>(null);
   const [confirm, setConfirm] = useState<null | "end" | "skip" | "replay" | { remove: string; name: string }>(null);
   const [again, setAgain] = useState(false);
+  const [soundBusy, setSoundBusy] = useState(false);
 
   const s = state?.session;
   const q = state?.question;
@@ -118,6 +119,25 @@ export function HostControl({ sessionId }: { sessionId: string }) {
               }}
             >
               Copy join link
+            </Button>
+            <Button
+              variant="secondary"
+              icon={s.settings.soundOn === false ? <VolumeX className="size-4" aria-hidden /> : <Volume2 className="size-4" aria-hidden />}
+              loading={soundBusy}
+              aria-pressed={s.settings.soundOn !== false}
+              onClick={async () => {
+                setSoundBusy(true);
+                try {
+                  await api.setProjectorSound(sessionId, s.settings.soundOn === false);
+                  await refresh();
+                } catch (e) {
+                  toast("error", errorMessage(e));
+                } finally {
+                  setSoundBusy(false);
+                }
+              }}
+            >
+              {s.settings.soundOn === false ? "Projector music off" : "Projector music on"}
             </Button>
             <Button
               icon={<ExternalLink className="size-4" aria-hidden />}

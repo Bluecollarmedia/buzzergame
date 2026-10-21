@@ -97,6 +97,12 @@ export function SettingsForm({
           />
         )}
         <Toggle label="Allow replaying a question" checked={value.allowReplay} onChange={(v) => set("allowReplay", v)} />
+        <Toggle
+          label="Music and sound effects on the projector"
+          description="Builds with the timer. The host can mute it during the game."
+          checked={value.soundOn}
+          onChange={(v) => set("soundOn", v)}
+        />
       </div>
 
       {mode === "multiple_choice" && value.speedBonus && (

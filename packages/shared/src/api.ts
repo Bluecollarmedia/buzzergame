@@ -84,6 +84,8 @@ export function createGameApi(sb: AnyClient) {
         p_expected_version: expectedVersion,
         p_args: args,
       }),
+    setProjectorSound: (sessionId: string, on: boolean) =>
+      rpc<{ soundOn: boolean; stateVersion: number }>(sb, "host_set_sound", { p_session_id: sessionId, p_on: on }),
     sessionResults: (sessionId: string) =>
       rpc<SessionResults>(sb, "session_results", { p_session_id: sessionId }),
     deleteSession: (sessionId: string) => rpc<void>(sb, "delete_session", { p_session_id: sessionId }),

@@ -64,7 +64,7 @@ The app uses native modules (camera, secure storage), so run it in a development
 | `pnpm build` | Type-checks the shared package and builds the website |
 | `pnpm lint` | ESLint for the website |
 | `pnpm typecheck` | TypeScript in every package |
-| `pnpm test` | Unit tests for the shared rules package |
+| `pnpm test` | Unit tests for the shared rules package and the projector music |
 | `pnpm test:db` | Database integration tests (needs a local Postgres 15+ on port 5432, see docs/testing.md) |
 | `pnpm test:e2e` | Browser tests against local Supabase and a production build of the website |
 | `pnpm db:reset` | Recreate the local database from the migrations |

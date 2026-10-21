@@ -44,6 +44,8 @@ export interface SessionSettings {
   allowReplay: boolean;
   showChoicesOnPhone: boolean;
   maxPlayers: number;
+  /** Music and sound effects on the projector. */
+  soundOn: boolean;
 }
 
 function clampInt(v: unknown, key: keyof typeof SETTING_LIMITS): number {
@@ -82,6 +84,7 @@ export function normalizeSessionSettings(
     allowReplay: bool(p.allowReplay, true),
     showChoicesOnPhone: bool(p.showChoicesOnPhone, isMc),
     maxPlayers: clampInt(p.maxPlayers, "maxPlayers"),
+    soundOn: bool(p.soundOn, true),
   };
 }
 
@@ -103,4 +106,5 @@ export const sessionSettingsFormSchema = z.object({
   allowReplay: z.boolean(),
   showChoicesOnPhone: z.boolean(),
   maxPlayers: z.number().int().min(2).max(500),
+  soundOn: z.boolean(),
 });
