@@ -33,7 +33,8 @@ export interface SessionRow {
   created_at: string;
   started_at: string | null;
   ended_at: string | null;
-  participants?: Array<{ count: number }>;
+  // Only ids: a count embed reads every column, and hosts may not read the secret hash column.
+  participants?: Array<{ id: string }>;
 }
 
 export const LIVE_STATUSES: SessionStatus[] = ["lobby", "countdown", "question_open", "reveal", "leaderboard", "paused"];

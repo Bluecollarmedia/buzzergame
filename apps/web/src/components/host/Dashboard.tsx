@@ -27,7 +27,7 @@ export function Dashboard() {
         const [e, q, s, qc, sc, pc] = await Promise.all([
           api.myEntitlement(),
           sb.from("quizzes").select("*, questions(count)").order("updated_at", { ascending: false }).limit(6),
-          sb.from("game_sessions").select("id, quiz_id, quiz_title, mode, status, room_code, question_count, created_at, started_at, ended_at, participants(count)").order("created_at", { ascending: false }).limit(6),
+          sb.from("game_sessions").select("id, quiz_id, quiz_title, mode, status, room_code, question_count, created_at, started_at, ended_at, participants(id)").order("created_at", { ascending: false }).limit(6),
           sb.from("quizzes").select("id", { count: "exact", head: true }),
           sb.from("game_sessions").select("id", { count: "exact", head: true }).eq("status", "finished"),
           sb.from("participants").select("id", { count: "exact", head: true }),
@@ -76,7 +76,7 @@ export function Dashboard() {
                 <div>
                   <p className="font-medium">{s.quiz_title}</p>
                   <p className="text-sm text-ink-muted">
-                    {STATUS_LABELS[s.status]} · {plural(s.participants?.[0]?.count ?? 0, "player")}
+                    {STATUS_LABELS[s.status]} · {plural(s.participants?.length ?? 0, "player")}
                   </p>
                 </div>
                 <Link href={`/sessions/${s.id}/host`} className={buttonClasses("primary", "sm")}>
@@ -155,7 +155,7 @@ export function Dashboard() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{s.quiz_title}</p>
                     <p className="text-sm text-ink-muted">
-                      {formatDateTime(s.created_at)} · {plural(s.participants?.[0]?.count ?? 0, "player")}
+                      {formatDateTime(s.created_at)} · {plural(s.participants?.length ?? 0, "player")}
                     </p>
                   </div>
                   {s.status === "finished" ? (
