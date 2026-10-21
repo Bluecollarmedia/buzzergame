@@ -35,6 +35,17 @@ Do **not** add the service-role key to Vercel. The website does not use it.
 
 Any host that runs Next.js works. Vercel is the simplest option.
 
+## 2b. Website on Netlify (instead of Vercel)
+
+`apps/web/netlify.toml` sets the build command, publish folder and the Next.js runtime plugin. In the Netlify UI:
+
+1. Import the repository. If Netlify asks which project to deploy, pick **web**.
+2. Build settings: leave **Base directory** empty and set **Package directory** to `apps/web`. The other build fields come from `netlify.toml`.
+3. Environment variables: the same three `NEXT_PUBLIC_…` variables as for Vercel. `NEXT_PUBLIC_SITE_URL` is your Netlify address, for example `https://<name>.netlify.app`.
+4. Deploy, then check `/api/health`.
+
+If every page returns Netlify's "Page not found", the Next.js runtime did not run. Check that the deploy log shows `@netlify/plugin-nextjs`.
+
 ## 3. First admin and first access code
 
 See [admin.md](admin.md).
