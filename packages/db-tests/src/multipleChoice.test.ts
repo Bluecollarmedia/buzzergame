@@ -45,9 +45,7 @@ describe("multiple choice game", () => {
     expect(after.me.score).toBe(1);
     expect((await playerState(s.sessionId, bob!)).myRoundPoints).toBe(0);
 
-    // reveal -> leaderboard -> countdown -> question 2, all driven by the clock.
-    await expirePhase(s.sessionId); await tick(s.sessionId);
-    expect(await status(s.sessionId)).toBe("leaderboard");
+    // By default there is no leaderboard step: reveal -> countdown -> question 2.
     await expirePhase(s.sessionId); await tick(s.sessionId);
     expect(await status(s.sessionId)).toBe("countdown");
     const r2 = await openCurrent(s.sessionId);
@@ -203,8 +201,6 @@ describe("multiple choice game", () => {
     // Skip the second question while it is open: no points, game ends.
     st = await rpc(host(uid), "host_state", { p_session_id: s.sessionId });
     await rpc(host(uid), "host_command", { p_session_id: s.sessionId, p_command: "next", p_expected_version: st.session.stateVersion });
-    expect(await status(s.sessionId)).toBe("leaderboard");
-    await rpc(host(uid), "host_command", { p_session_id: s.sessionId, p_command: "next" });
     const r2 = await openCurrent(s.sessionId);
     await submit(s.sessionId, ann!, r2, 1);
     st = await rpc(host(uid), "host_state", { p_session_id: s.sessionId });
@@ -243,5 +239,19 @@ describe("multiple choice game", () => {
     const [ev] = await as<{ base_points: number; bonus_points: number }>(su, "select base_points, bonus_points from score_events where round_id = $1", [r1]);
     expect(ev!.base_points).toBe(1);
     expect(ev!.bonus_points).toBeGreaterThanOrEqual(9);
+  });
+
+  it("shows a leaderboard between questions only when the host turns it on", async () => {
+    const s = await launch(2, { showLeaderboard: true });
+    const [ann] = await joinPlayers(s.joinToken, ["Ann"]);
+    const r1 = await startToFirstQuestion(uid, s.sessionId);
+    await submit(s.sessionId, ann!, r1, 0);
+    await expirePhase(s.sessionId); await tick(s.sessionId);
+    expect(await status(s.sessionId)).toBe("reveal");
+    await expirePhase(s.sessionId); await tick(s.sessionId);
+    expect(await status(s.sessionId)).toBe("leaderboard");
+    expect((await playerState(s.sessionId, ann!)).leaderboard[0].score).toBe(1);
+    await expirePhase(s.sessionId); await tick(s.sessionId);
+    expect(await status(s.sessionId)).toBe("countdown");
   });
 });

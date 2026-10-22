@@ -94,7 +94,6 @@ test("multiple choice game with three players and a projector", async ({ browser
   await hostPage.getByText("Timing and limits").click();
   await setNumber(hostPage, "f-get-ready-countdown", 1);
   await setNumber(hostPage, "f-answer-reveal", 2);
-  await setNumber(hostPage, "f-leaderboard", 2);
   await hostPage.getByRole("button", { name: "Open lobby" }).click();
   await hostPage.waitForURL(/\/sessions\/[0-9a-f-]{36}\/host$/);
   mcSessionId = hostPage.url().split("/").at(-2)!;
