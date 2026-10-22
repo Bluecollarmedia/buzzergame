@@ -76,11 +76,16 @@ export function SettingsForm({
       <div className="divide-y divide-line rounded-lg border border-line px-4">
         <Toggle
           label="Advance automatically"
-          description="Reveal, show the leaderboard and start the next question without pressing anything."
+          description="Reveal the answer and start the next question without pressing anything."
           checked={value.autoAdvance}
           onChange={(v) => set("autoAdvance", v)}
         />
-        <Toggle label="Show leaderboard between questions" checked={value.showLeaderboard} onChange={(v) => set("showLeaderboard", v)} />
+        <Toggle
+          label="Show leaderboard between questions"
+          description="Off: players see only whether they were right, and standings appear at the end."
+          checked={value.showLeaderboard}
+          onChange={(v) => set("showLeaderboard", v)}
+        />
         <Toggle label="Allow players to join after the game starts" checked={value.allowLateJoin} onChange={(v) => set("allowLateJoin", v)} />
         {mode === "multiple_choice" ? (
           <>
@@ -114,7 +119,7 @@ export function SettingsForm({
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <NumberField label="Get-ready countdown" suffix="seconds" value={value.countdownSeconds} onChange={(n) => set("countdownSeconds", n)} min={L.countdownSeconds.min} max={L.countdownSeconds.max} />
           <NumberField label="Answer reveal" suffix="seconds" value={value.revealSeconds} onChange={(n) => set("revealSeconds", n)} min={L.revealSeconds.min} max={L.revealSeconds.max} />
-          <NumberField label="Leaderboard" suffix="seconds" value={value.leaderboardSeconds} onChange={(n) => set("leaderboardSeconds", n)} min={L.leaderboardSeconds.min} max={L.leaderboardSeconds.max} />
+          {value.showLeaderboard && <NumberField label="Leaderboard" suffix="seconds" value={value.leaderboardSeconds} onChange={(n) => set("leaderboardSeconds", n)} min={L.leaderboardSeconds.min} max={L.leaderboardSeconds.max} />}
           <NumberField label="Maximum players" value={value.maxPlayers} onChange={(n) => set("maxPlayers", n)} min={L.maxPlayers.min} max={L.maxPlayers.max} />
         </div>
       </details>

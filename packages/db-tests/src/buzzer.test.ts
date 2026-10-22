@@ -105,8 +105,6 @@ describe("color buzzer", () => {
     await rpc(host(uid), "host_command", { p_session_id: s.sessionId, p_command: "close_question" });
     expect(await status(s.sessionId)).toBe("reveal");
     await rpc(host(uid), "host_command", { p_session_id: s.sessionId, p_command: "next" });
-    expect(await status(s.sessionId)).toBe("leaderboard");
-    await rpc(host(uid), "host_command", { p_session_id: s.sessionId, p_command: "next" });
     const r2 = await openCurrent(s.sessionId);
     expect(r2).not.toBe(r1);
   });

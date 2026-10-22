@@ -15,7 +15,7 @@ any live state ──end──▶ finished          lobby ──end──▶ abo
 - `countdown`: a short "get ready" phase (3 seconds by default; 0 skips it).
 - `question_open`: answers are accepted.
 - `reveal`: shows the correct answer. Players see whether they were right.
-- `leaderboard`: optional, shown between questions.
+- `leaderboard`: optional standings between questions. Off by default (`showLeaderboard`), so the reveal goes straight to the next countdown and standings appear only at the end.
 - After the last question's reveal the game goes straight to `finished`.
 
 Every change increases `state_version`. Clients never apply an older version.

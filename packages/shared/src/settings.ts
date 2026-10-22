@@ -69,7 +69,7 @@ export function normalizeSessionSettings(
     countdownSeconds: clampInt(p.countdownSeconds, "countdownSeconds"),
     revealSeconds: clampInt(p.revealSeconds, "revealSeconds"),
     leaderboardSeconds: clampInt(p.leaderboardSeconds, "leaderboardSeconds"),
-    showLeaderboard: bool(p.showLeaderboard, true),
+    showLeaderboard: bool(p.showLeaderboard, false),
     autoAdvance: bool(p.autoAdvance, isMc),
     allowAnswerChange: bool(p.allowAnswerChange, false),
     allowLateJoin: bool(p.allowLateJoin, true),

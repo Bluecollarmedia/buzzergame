@@ -45,7 +45,7 @@ When a game changes, the database sends a broadcast message on the channel `sess
 
 ## Automatic progression
 
-Timed phases move on by themselves: countdown, then question, then reveal, then leaderboard, then the next question. Two mechanisms do this:
+Timed phases move on by themselves: countdown, then question, then reveal, then (if the host turned it on) a leaderboard, then the next question. Two mechanisms do this:
 
 1. Clients call `tick_session` when a deadline they know about passes. The server checks its own clock and advances only if the deadline really passed. Repeated calls are harmless.
 2. A pg_cron job (`crowdquiz_tick`, every 2 seconds) does the same for every game. This keeps games moving even when no device is connected.
