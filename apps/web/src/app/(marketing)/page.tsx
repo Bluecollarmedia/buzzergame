@@ -105,6 +105,11 @@ export default function LandingPage() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-6 text-sm text-ink-subtle sm:flex-row">
           <Logo className="text-sm" />
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-1" aria-label="Legal">
+            <Link href="/privacy" className="hover:text-ink">Privacy</Link>
+            <Link href="/terms" className="hover:text-ink">Terms</Link>
+            <Link href="/support" className="hover:text-ink">Support</Link>
+          </nav>
           <span>{brand.tagline}</span>
         </div>
       </footer>

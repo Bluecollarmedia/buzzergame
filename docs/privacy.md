@@ -1,6 +1,6 @@
 # Privacy and data retention
 
-This describes what CrowdQuiz stores and for how long. It is a starting point for your own privacy policy, not legal advice.
+This describes what the service stores and for how long. It is the source for the public privacy policy at `/privacy` (apps/web/src/app/(marketing)/privacy/page.tsx); keep the two in step. It is not legal advice.
 
 ## Players (guests)
 
@@ -18,6 +18,10 @@ On the device, the website keeps the per-game secret in `localStorage` and the a
 ## Hosts
 
 Hosts have an account with an email address, a display name and a password, handled by Supabase Auth. Their quizzes, games, access history and audit entries are linked to their account.
+
+Hosts can attach one photo to a question from the Buzzavid app. Photos are stored in the public `question-images` bucket under `<host id>/<random id>.jpg` (the address is unguessable but not secret) and are shown on the projector and host screens. Only the owning host can add or remove files in their folder.
+
+Hosts can delete their account in the app (`delete_my_account()`). That removes the Supabase Auth user, which cascades to their profile, quizzes, questions, games (with guest names, answers and scores), entitlements and redemptions, after the app has removed their photos. Audit log rows keep only the random user id until the 365-day purge.
 
 ## Retention
 

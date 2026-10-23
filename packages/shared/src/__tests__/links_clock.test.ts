@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ServerClock, buildJoinUrl, displaySeconds, generatePlayerSecret, parseJoinInput, uuidv4 } from "../index";
+import { ServerClock, buildJoinUrl, buildQuestionImageUrl, displaySeconds, generatePlayerSecret, parseJoinInput, uuidv4 } from "../index";
 
 const token = "abcdefghijklmnopqrstuvwx";
 
@@ -55,5 +55,16 @@ describe("random", () => {
   });
   it("generates v4 uuids", () => {
     expect(uuidv4()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+});
+
+describe("question photo address", () => {
+  const id = "123e4567-e89b-12d3-a456-426614174000";
+  it("builds the public storage address and rejects odd paths", () => {
+    expect(buildQuestionImageUrl("https://x.supabase.co/", `${id}/${id}.jpg`)).toBe(
+      `https://x.supabase.co/storage/v1/object/public/question-images/${id}/${id}.jpg`,
+    );
+    expect(buildQuestionImageUrl("https://x.supabase.co", "../secret.jpg")).toBeNull();
+    expect(buildQuestionImageUrl("https://x.supabase.co", null)).toBeNull();
   });
 });

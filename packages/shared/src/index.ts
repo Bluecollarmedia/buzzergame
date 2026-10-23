@@ -10,3 +10,4 @@ export * from "./links";
 export * from "./random";
 export * from "./api";
 export * from "./sync";
+export * from "./haptics";

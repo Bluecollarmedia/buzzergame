@@ -13,7 +13,8 @@ There are two game modes:
 apps/
   web/              Next.js website: host dashboard, quiz editor, live host controls,
                     projector view, browser player, admin console
-  player-mobile/    Expo React Native player app for iOS and Android (QR scanner, deep links)
+  player-mobile/    Buzzavid app (Expo React Native, iOS first): players scan and buzz with countdown
+                    haptics; hosts write quizzes with photos and run games. Liquid Glass UI.
 packages/
   shared/           Game rules, scoring, validation, typed API client and realtime sync,
                     used by both apps
@@ -77,6 +78,7 @@ The app uses native modules (camera, secure storage), so run it in a development
 - [Game engine](docs/game-engine.md): states, timing, scoring, buzzer resolution, host commands
 - [Testing](docs/testing.md): what is tested and how to run it
 - [Deployment](docs/deployment.md): Supabase, Vercel and domains
+- [Buzzavid app](docs/mobile.md) and [App Store guide](docs/app-store.md)
 - [Admin and access codes](docs/admin.md): first admin, issuing codes, managing hosts
 - [Mobile app](docs/mobile.md): development builds, EAS builds, store submission, deep links
 - [Privacy and data retention](docs/privacy.md)

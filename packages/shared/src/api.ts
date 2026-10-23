@@ -101,6 +101,9 @@ export function createGameApi(sb: AnyClient) {
     duplicateQuiz: (quizId: string) => rpc<string>(sb, "duplicate_quiz", { p_quiz_id: quizId }),
     quizIssues: (quizId: string) => rpc<string[]>(sb, "quiz_issues", { p_quiz_id: quizId }),
 
+    // Account
+    deleteMyAccount: () => rpc<void>(sb, "delete_my_account"),
+
     // Access
     myEntitlement: () => rpc<EntitlementStatus>(sb, "my_entitlement"),
     redeemAccessCode: (code: string) =>

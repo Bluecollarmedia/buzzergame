@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   LIMITS, errorMessage, generatePlayerSecret, isJoinToken, normalizeDisplayName, toAppError, type JoinInfo,
 } from "@crowdquiz/shared";
-import { Button, Center, Logo, Screen, styles } from "@/components/ui";
+import { Button, Center, Field, Logo, PulseDot, Screen, styles } from "@/components/ui";
 import { PlayerGame } from "@/components/PlayerGame";
 import { getApi } from "@/lib/supabase";
 import { clearPlayer, loadPlayer, savePlayer, type StoredPlayer } from "@/lib/storage";
 import { colors } from "@/lib/theme";
+import { feel } from "@/lib/haptics";
 
 type Phase =
   | { kind: "loading" }
@@ -90,7 +91,8 @@ export default function JoinScreen() {
       </View>
       {phase.kind === "loading" && (
         <Center>
-          <Text style={styles.body} accessibilityRole="progressbar">
+          <PulseDot color={colors.primary} size={14} />
+          <Text style={[styles.body, { marginTop: 14 }]} accessibilityRole="progressbar">
             Finding the game…
           </Text>
         </Center>
@@ -109,7 +111,7 @@ export default function JoinScreen() {
           <Text style={styles.label}>{phase.info.title}</Text>
           <Text style={[styles.big, { marginTop: 8 }]}>{phase.message}</Text>
           <View style={{ alignSelf: "stretch", marginTop: 24 }}>
-            <Button title="Back" variant="secondary" onPress={home} />
+            <Button title="Back" variant="glass" onPress={home} />
           </View>
         </Center>
       )}
@@ -144,7 +146,10 @@ function NameForm({ info, onJoin }: { info: JoinInfo; onJoin: (name: string) => 
   const [busy, setBusy] = useState(false);
   const submit = async () => {
     const n = normalizeDisplayName(name);
-    if (!n.ok) return setError(n.error);
+    if (!n.ok) {
+      feel.wrong();
+      return setError(n.error);
+    }
     setBusy(true);
     setError(null);
     try {
@@ -155,30 +160,24 @@ function NameForm({ info, onJoin }: { info: JoinInfo; onJoin: (name: string) => 
     }
   };
   return (
-    <KeyboardAvoidingView style={{ flex: 1, justifyContent: "center", gap: 14 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, justifyContent: "center", gap: 16 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Text style={styles.label}>You&apos;re joining</Text>
-      <Text style={styles.h1}>{info.title}</Text>
-      <TextInput
-        accessibilityLabel="Your name"
+      <Text style={styles.title}>{info.title}</Text>
+      <Field
+        label="Your name"
         value={name}
         onChangeText={setName}
         placeholder="Enter your name"
-        placeholderTextColor="rgba(255,255,255,0.3)"
         maxLength={LIMITS.displayName}
         autoFocus
         autoComplete="nickname"
         textContentType="nickname"
         returnKeyType="go"
         onSubmitEditing={submit}
-        style={[styles.input, { marginTop: 12 }]}
+        error={error}
       />
-      {error && (
-        <Text style={styles.error} accessibilityRole="alert">
-          {error}
-        </Text>
-      )}
       <Button title="Join game" onPress={submit} loading={busy} />
-      <Text style={[styles.body, { fontSize: 13, color: colors.subtle }]}>No account needed. Your name is only shown in this game.</Text>
+      <Text style={[styles.small, { textAlign: "center" }]}>No account needed. Your name is only shown in this game.</Text>
     </KeyboardAvoidingView>
   );
 }

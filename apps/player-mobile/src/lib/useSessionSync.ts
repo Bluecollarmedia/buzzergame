@@ -8,6 +8,7 @@ export function useSessionSync<T extends SyncedState>(opts: {
   sessionId: string;
   fetchState: () => Promise<T>;
   heartbeatMs?: number;
+  events?: Array<"state" | "roster" | "answers">;
 }) {
   const [state, setState] = useState<T | null>(null);
   const [connection, setConnection] = useState<ConnectionStatus>("connecting");
@@ -24,7 +25,7 @@ export function useSessionSync<T extends SyncedState>(opts: {
       supabase: getSupabase(),
       sessionId: opts.sessionId,
       fetchState: () => fetchRef.current(),
-      events: ["state", "roster"],
+      events: opts.events ?? ["state", "roster"],
       heartbeatMs: opts.heartbeatMs,
       onState: setState,
       onConnection: setConnection,
@@ -42,6 +43,7 @@ export function useSessionSync<T extends SyncedState>(opts: {
       sync.stop();
       syncRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opts.sessionId, opts.heartbeatMs]);
 
   return { state, connection, fatal, clock, refresh: () => syncRef.current?.refresh() };
