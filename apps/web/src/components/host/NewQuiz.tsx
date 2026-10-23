@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Hand, Timer } from "lucide-react";
 import { GAME_MODE_INFO, LIMITS, errorMessage, type GameMode } from "@crowdquiz/shared";
@@ -11,11 +11,39 @@ import { Field, Input } from "@/components/ui/Field";
 import { Alert, PageHeader } from "@/components/ui/Misc";
 import { cn } from "@/components/ui/cn";
 
+const NEW_QUIZ_KEY = "crowdquiz:new-quiz-form";
+
 export function NewQuiz() {
   const router = useRouter();
   const api = useApi();
   const [mode, setMode] = useState<GameMode | null>(null);
   const [title, setTitle] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  // Keep the half-filled form if the page is closed before "Create". Read after
+  // mount, since the server render can't see this browser's storage.
+  useEffect(() => {
+    let saved: { mode?: GameMode | null; title?: string } | null = null;
+    try {
+      saved = JSON.parse(window.localStorage.getItem(NEW_QUIZ_KEY) ?? "null");
+    } catch {
+      /* ignore */
+    }
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (saved?.title) setTitle(saved.title);
+    if (saved?.mode) setMode(saved.mode);
+    setLoaded(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      if (title || mode) window.localStorage.setItem(NEW_QUIZ_KEY, JSON.stringify({ mode, title }));
+      else window.localStorage.removeItem(NEW_QUIZ_KEY);
+    } catch {
+      /* ignore */
+    }
+  }, [loaded, mode, title]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +63,11 @@ export function NewQuiz() {
     if (error || !data) {
       setBusy(false);
       return setError(errorMessage(error));
+    }
+    try {
+      window.localStorage.removeItem(NEW_QUIZ_KEY);
+    } catch {
+      /* ignore */
     }
     try {
       await api.addQuestion(data.id);

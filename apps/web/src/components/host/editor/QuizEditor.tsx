@@ -22,6 +22,7 @@ import { QuestionStage } from "@/components/game/QuestionStage";
 import { LaunchDialog } from "../LaunchDialog";
 import { SettingsForm } from "../SettingsForm";
 import { useAutosave, type SaveStatus } from "./useAutosave";
+import { applyBackup, clearBackup, readBackup, writeBackup, type LocalBackup } from "./localBackup";
 
 const toDraft = (q: QuestionRow) => ({ prompt: q.prompt, choices: q.choices, correctIndex: q.correct_index });
 
@@ -58,11 +59,6 @@ export function QuizEditor({ quizId }: { quizId: string }) {
 
   const load = useCallback(async () => apply(await fetchQuiz(), true), [apply, fetchQuiz]);
 
-  useEffect(() => {
-    fetchQuiz()
-      .then((d) => apply(d, false))
-      .catch((e: Error) => setLoadError(e.message));
-  }, [fetchQuiz, apply]);
 
   // ---- Autosave -----------------------------------------------------------
   const save = useCallback(
@@ -97,6 +93,38 @@ export function QuizEditor({ quizId }: { quizId: string }) {
     [quiz, questions, quizId],
   );
   const autosave = useAutosave(save);
+  const { markDirty, unsavedKeys } = autosave;
+
+  // Edits from this device that never reached the server (lost signal, tab
+  // closed mid-save) are put back on top of the server copy, then saved.
+  useEffect(() => {
+    fetchQuiz()
+      .then((d) => {
+        const keys = applyBackup(readBackup(quizId), d);
+        for (const k of keys) markDirty(k);
+        apply(d, false);
+        if (keys.size) toast("success", "Restored changes that hadn't finished saving.");
+        else clearBackup(quizId);
+      })
+      .catch((e: Error) => setLoadError(e.message));
+    // Load once per quiz; toast and markDirty don't need to re-run it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchQuiz, apply, quizId]);
+
+  // Keep a copy of not-yet-saved edits in this browser until the server has them.
+  useEffect(() => {
+    if (!quiz) return;
+    const keys = unsavedKeys();
+    const backup: Omit<LocalBackup, "savedAt"> = { questions: {} };
+    if (keys.has("meta")) backup.meta = { title: quiz.title, description: quiz.description };
+    if (keys.has("settings")) backup.settings = quiz.settings;
+    for (const q of questions) {
+      if (keys.has(q.id)) {
+        backup.questions[q.id] = { prompt: q.prompt, choices: q.choices, correct_index: q.correct_index, time_limit_seconds: q.time_limit_seconds };
+      }
+    }
+    writeBackup(quiz.id, backup);
+  }, [quiz, questions, autosave.status, unsavedKeys]);
 
   const updateQuestion = (id: string, patch: Partial<QuestionRow>) => {
     setQuestions((qs) => qs.map((q) => (q.id === id ? { ...q, ...patch } : q)));
