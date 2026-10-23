@@ -9,4 +9,4 @@ export const links = {
   terms: site ? `${site}/terms` : "",
   support: site ? `${site}/support` : "",
 };
-export const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? "";
+export const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? "forsakaspotify1@gmail.com";
