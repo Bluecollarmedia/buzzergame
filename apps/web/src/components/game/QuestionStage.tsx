@@ -15,6 +15,7 @@ export function QuestionStage({
   distribution = null,
   winner = null,
   questionLabel,
+  imageUrl,
   className,
 }: {
   prompt: string;
@@ -24,6 +25,8 @@ export function QuestionStage({
   distribution?: readonly number[] | null;
   winner?: { displayName: string; choiceIndex: number } | null;
   questionLabel?: string;
+  /** Optional photo for the question, shown between the prompt and the answers. */
+  imageUrl?: string | null;
   className?: string;
 }) {
   const revealed = correctIndex !== null && correctIndex !== undefined;
@@ -42,6 +45,13 @@ export function QuestionStage({
       >
         {prompt || <span className="text-white/30">Your question will appear here</span>}
       </h2>
+      {imageUrl ? (
+        <div className="mt-[2cqw] flex min-h-0 flex-1 items-center justify-center">
+          {/* A photo chosen by the host from the Buzzavid app. Its size is unknown, so a plain img is used. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imageUrl} alt="" className="max-h-full max-w-full rounded-[1.4cqw] object-contain" />
+        </div>
+      ) : null}
       <div className="mt-auto grid grid-cols-2 gap-[1.6cqw] pt-[3cqw]">
         {ANSWER_COLORS.map((c, i) => {
           const isCorrect = revealed && i === correctIndex;

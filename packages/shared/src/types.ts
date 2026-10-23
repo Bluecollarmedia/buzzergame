@@ -28,6 +28,8 @@ export interface QuestionView {
   /** Never sent to players. */
   prompt?: string | null;
   choices?: [string, string, string, string] | null;
+  /** Photo for this question (path in the question-images bucket). Projector and host only. */
+  imagePath?: string | null;
   startedAt?: string | null;
   deadline?: string | null;
   roundStatus?: "open" | "closed" | "voided" | null;

@@ -7,7 +7,7 @@ export const brand = {
   tagline: "Live quiz games where every phone is a buzzer.",
   /** Shown in the browser tab and app store listings. */
   shortDescription: "Host live trivia on a projector. Players answer on their phones.",
-  supportEmail: "support@example.com",
+  supportEmail: "forsakaspotify1@gmail.com",
   colors: {
     /** Primary accent used for actions and focus rings. */
     primary: "#4F46E5",

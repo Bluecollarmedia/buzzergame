@@ -80,3 +80,9 @@ export function parseJoinInput(raw: string, allowedHosts?: string[]): ParsedJoin
 export function formatRoomCode(code: string): string {
   return code.length === 6 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
 }
+
+/** Public address of a question photo stored in the `question-images` bucket. */
+export function buildQuestionImageUrl(supabaseUrl: string, path: string | null | undefined): string | null {
+  if (!path || !/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/.test(path)) return null;
+  return `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/question-images/${path}`;
+}

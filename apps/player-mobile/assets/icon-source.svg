@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B2A9E"/>
+      <stop offset="0.55" stop-color="#1A1250"/>
+      <stop offset="1" stop-color="#0A0720"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.8" cy="0.1" r="0.8">
+      <stop offset="0" stop-color="#8F6BFF" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#8F6BFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.1" cy="0.95" r="0.8">
+      <stop offset="0" stop-color="#FF4FA3" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#FF4FA3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="btn" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#FF7AC0"/>
+      <stop offset="0.5" stop-color="#FF3D8F"/>
+      <stop offset="1" stop-color="#B8186B"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glowA)"/>
+  <rect width="1024" height="1024" fill="url(#glowB)"/>
+  <!-- buzz rings -->
+  <g fill="none" stroke="#fff" stroke-linecap="round">
+    <circle cx="512" cy="512" r="400" stroke-opacity="0.10" stroke-width="10"/>
+    <circle cx="512" cy="512" r="332" stroke-opacity="0.18" stroke-width="12"/>
+  </g>
+  <!-- button base glass ring -->
+  <circle cx="512" cy="512" r="268" fill="#fff" fill-opacity="0.10" stroke="#fff" stroke-opacity="0.35" stroke-width="6"/>
+  <!-- button -->
+  <g filter="url(#shadow)"><circle cx="512" cy="500" r="218" fill="url(#btn)"/></g>
+  <ellipse cx="512" cy="392" rx="150" ry="86" fill="url(#shine)" opacity="0.55"/>
+  <!-- bolt -->
+  <path d="M556 330 L424 530 H508 L474 690 L612 478 H526 Z" fill="#fff"/>
+</svg>

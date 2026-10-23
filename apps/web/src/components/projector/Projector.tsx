@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Crown, Maximize, Minimize, Pause, Trophy, Users, Volume2, VolumeX } from "lucide-react";
 import {
-  ANSWER_COLORS, GAME_MODE_INFO, brand, buildJoinUrl, createGameApi, errorMessage, formatRoomCode, winners,
+  ANSWER_COLORS, GAME_MODE_INFO, brand, buildJoinUrl, buildQuestionImageUrl, createGameApi, errorMessage, formatRoomCode, winners,
   type ProjectorState,
 } from "@crowdquiz/shared";
 import { getSupabase } from "@/lib/supabase/client";
@@ -17,6 +17,7 @@ import { QrCode } from "@/components/game/QrCode";
 import { QuestionStage } from "@/components/game/QuestionStage";
 import { useCountdown } from "@/components/game/useCountdown";
 import { useSessionSync } from "@/components/game/useSessionSync";
+import { publicEnv } from "@/lib/env";
 import { useGameAudio } from "./audio/useGameAudio";
 
 /** Read-only, full-screen presentation view. Holds no host credentials. */
@@ -178,6 +179,7 @@ export function Projector({ token }: { token: string }) {
                 correctIndex={effective === "reveal" ? q.correctIndex : null}
                 distribution={effective === "reveal" && isMc ? q.distribution : null}
                 winner={effective === "reveal" ? q.winner : null}
+                imageUrl={buildQuestionImageUrl(publicEnv().supabaseUrl, q.imagePath)}
               />
             </div>
             <aside className="flex w-[13vw] flex-col items-center justify-start gap-[2vw] pt-[1vw]">
