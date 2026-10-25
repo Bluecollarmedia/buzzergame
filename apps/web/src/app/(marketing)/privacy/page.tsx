@@ -60,6 +60,7 @@ export default function PrivacyPage() {
       <H2>How long we keep it</H2>
       <UL>
         <li>Finished or cancelled games, with player names, answers and scores: deleted automatically 90 days after the game ends. Hosts can delete a game sooner.</li>
+        <li>Draft quizzes that have not been edited for 60 days are deleted automatically. Question photos are removed 30 days after the quiz&apos;s last game.</li>
         <li>Games that are never finished: cancelled after 24 hours of no activity, then deleted on the same schedule.</li>
         <li>Security log entries: 365 days.</li>
         <li>Network-address counters used to limit abuse: 1 hour.</li>

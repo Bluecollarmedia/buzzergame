@@ -19,7 +19,8 @@
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local > packages/shared/src/database.types.ts",
     "seed:dev": "node scripts/seed-dev.mjs",
-    "mobile": "pnpm --filter @crowdquiz/player-mobile start"
+    "mobile": "pnpm --filter @crowdquiz/player-mobile start",
+    "purge:photos": "node scripts/purge-photos.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

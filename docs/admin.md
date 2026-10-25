@@ -34,3 +34,13 @@ Hosts redeem codes at **Account → Redeem a code**. If the host already has acc
 - **Overview**: counts of hosts, games and players.
 
 Admins can always launch games without a code.
+
+## Photo storage clean-up
+
+Every night the database detaches old photos (30 days after a quiz's last game, or 90 days after the last edit if it was never played) and deletes drafts untouched for 60 days. The files themselves are removed by a small script, because a database cannot delete files from storage:
+
+```
+SUPABASE_URL=https://xxxx.supabase.co SUPABASE_SERVICE_ROLE_KEY=... pnpm purge:photos
+```
+
+Run it now and then (weekly is plenty). Keep the service-role key private. Moving photo storage to Cloudflare R2 later would let a lifecycle rule do this automatically.

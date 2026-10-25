@@ -76,3 +76,58 @@ describe("account deletion", () => {
     expect(await as(su, "select 1 from public.participants where session_id = $1", [s.sessionId])).toHaveLength(0);
   });
 });
+
+describe("photo limits and expiry", () => {
+  const add = (uid: string) =>
+    as(host(uid), "insert into storage.objects (bucket_id, name) values ('question-images', $1)", [`${uid}/${randomUUID()}.jpg`]);
+
+  it("lets free accounts keep 10 photos and hosting accounts 200", async () => {
+    const free = await createUser();
+    for (let i = 0; i < 10; i++) await add(free);
+    await expect(add(free)).rejects.toThrow(/row-level security/);
+    expect(await rpc(host(free), "my_photo_quota")).toEqual({ used: 10, limit: 10 });
+
+    const paid = await createUser();
+    await grantAccess(paid);
+    expect((await rpc(host(paid), "my_photo_quota")).limit).toBe(200);
+    await add(paid);
+    expect((await rpc(host(paid), "my_photo_quota")).used).toBe(1);
+  });
+
+  it("deletes old drafts and detaches old photos, queueing the files", async () => {
+    const uid = await createUser();
+    await grantAccess(uid);
+    const stale = await createQuiz(uid, mcQuiz(1));
+    const fresh = await createQuiz(uid, mcQuiz(1));
+    const played = await createQuiz(uid, mcQuiz(1));
+    const pStale = `${uid}/${randomUUID()}.jpg`;
+    const pFresh = `${uid}/${randomUUID()}.jpg`;
+    const pPlayed = `${uid}/${randomUUID()}.jpg`;
+    for (const [q, p] of [[stale, pStale], [fresh, pFresh], [played, pPlayed]] as const) {
+      await as(host(uid), "update questions set media = $2 where quiz_id = $1", [q, { type: "image", path: p }]);
+    }
+    const s = await rpc(host(uid), "create_session", { p_quiz_id: played, p_settings: {} });
+    await as(su, "update game_sessions set status = 'finished', ended_at = now() - interval '31 days' where id = $1", [s.sessionId]);
+    await as(su, "alter table quizzes disable trigger user");
+    await as(su, "alter table questions disable trigger user");
+    await as(su, "update quizzes set updated_at = now() - interval '61 days' where id = $1", [stale]);
+    await as(su, "update questions set updated_at = now() - interval '61 days' where quiz_id = $1", [stale]);
+    await as(su, "alter table quizzes enable trigger user");
+    await as(su, "alter table questions enable trigger user");
+
+    const r = await as<{ r: { deletedDrafts: number; detachedPhotos: number } }>(su, "select private.purge_content() r");
+    expect(r[0]!.r.deletedDrafts).toBeGreaterThanOrEqual(1);
+    expect(r[0]!.r.detachedPhotos).toBeGreaterThanOrEqual(1);
+
+    expect(await as(su, "select 1 from quizzes where id = $1", [stale])).toHaveLength(0);
+    expect(await as(su, "select 1 from quizzes where id = $1", [fresh])).toHaveLength(1);
+    const [pq] = await as<{ media: unknown }>(su, "select media from questions where quiz_id = $1", [played]);
+    expect(pq!.media).toBeNull();
+    const [fq] = await as<{ media: unknown }>(su, "select media from questions where quiz_id = $1", [fresh]);
+    expect(fq!.media).not.toBeNull();
+    const queued = (await as<{ path: string }>(su, "select path from private.photo_trash")).map((x) => x.path);
+    expect(queued).toContain(pStale);
+    expect(queued).toContain(pPlayed);
+    expect(queued).not.toContain(pFresh);
+  });
+});
