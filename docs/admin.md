@@ -2,6 +2,8 @@
 
 ## Create the first admin
 
+Admins also get an **Admin** tab in the iPhone app (access codes, hosts, live games). It appears only for admin accounts.
+
 Admins are hosts whose user id is listed in `public.admin_users`. No API can add the first admin. This is deliberate: it has to be done once, by someone with database access.
 
 1. Sign up on the website with the email the admin will use, and confirm the email.
