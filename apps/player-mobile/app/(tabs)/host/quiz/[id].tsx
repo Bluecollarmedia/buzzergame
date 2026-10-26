@@ -322,6 +322,11 @@ export default function QuizEditor() {
             <Pill tone="primary">{GAME_MODE_INFO[quiz.mode].name}</Pill>
             <Pill tone={quiz.status === "ready" ? "good" : "neutral"}>{quiz.status === "ready" ? "Ready" : "Draft"}</Pill>
           </View>
+          {quiz.status === "draft" ? (
+            <Text style={[styles.small, { color: colors.subtle }]}>
+              Drafts are kept for 60 days after your last edit, then deleted. Photos are removed 30 days after a quiz's last game.
+            </Text>
+          ) : null}
         </View>
 
         {notice ? (

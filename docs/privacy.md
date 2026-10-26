@@ -31,6 +31,8 @@ A nightly job (`private.purge_expired_data`, scheduled with pg_cron at 03:30 UTC
 | --- | --- |
 | Live game with no activity | Cancelled after 24 hours |
 | Finished or cancelled games, including guest names, answers and scores | Deleted 90 days after the game ends |
+| Draft quizzes | Deleted after 60 days without edits |
+| Question photos | Removed 30 days after the quiz's last game (90 days after the last edit if never played); limit of 10 photos for free accounts, 200 with hosting access |
 | Audit log entries | 365 days |
 | Rate-limit counters (contain IP addresses) | 1 hour |
 

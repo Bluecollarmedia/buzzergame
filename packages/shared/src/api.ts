@@ -106,6 +106,7 @@ export function createGameApi(sb: AnyClient) {
 
     // Access
     myEntitlement: () => rpc<EntitlementStatus>(sb, "my_entitlement"),
+    myPhotoQuota: () => rpc<{ used: number; limit: number }>(sb, "my_photo_quota"),
     redeemAccessCode: (code: string) =>
       rpc<{ entitlementId: string; plan: string; startsAt: string; expiresAt: string }>(sb, "redeem_access_code", {
         p_code: code,
