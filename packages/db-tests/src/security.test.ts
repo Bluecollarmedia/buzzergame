@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
-  anon, as, createQuiz, createUser, grantAccess, host, joinPlayers, playerState, rpc, rpcError,
+  anon, anonFrom, as, createQuiz, createUser, grantAccess, host, joinPlayers, playerState, rpc, rpcError,
   secret, startToFirstQuestion, su,
 } from "./db";
 import { mcQuiz } from "./fixtures";
@@ -130,5 +130,77 @@ describe("disabled accounts", () => {
     expect(row!.status).toBe("aborted");
     const [audit] = await as<{ n: number }>(su, "select count(*)::int n from audit_log where action = 'host.disabled'");
     expect(audit!.n).toBeGreaterThan(0);
+  });
+});
+
+describe("guessing protection", () => {
+  // Fill the global bucket for the current minute, make one more call and
+  // expect it to be refused, then empty the bucket so other tests are unaffected.
+  async function withFullBucket(bucket: string, max: number, run: () => Promise<string>) {
+    const window = "to_timestamp(floor(extract(epoch from now()) / 60) * 60)";
+    await as(
+      su,
+      `insert into private.rate_limits (bucket, window_start, hits) values ($1, ${window}, $2)
+                  on conflict (bucket, window_start) do update set hits = excluded.hits`,
+      [bucket, max],
+    );
+    try {
+      expect(await run()).toBe("rate_limited");
+    } finally {
+      await as(su, "delete from private.rate_limits where bucket = $1", [bucket]);
+    }
+  }
+
+  it("caps room-code guessing for everyone, not only per address", async () => {
+    await withFullBucket("room_code:all", 1500, () =>
+      rpcError(anonFrom(`198.51.100.${Math.floor(Math.random() * 250)}`), "resolve_room_code", {
+        p_room_code: "ZZZZZZ",
+      }),
+    );
+  });
+
+  it("caps join-link lookups and join attempts for everyone", async () => {
+    await withFullBucket("join_info:all", 3000, () =>
+      rpcError(anon, "get_join_info", { p_join_token: session.joinToken }),
+    );
+    await withFullBucket("join:all", 3000, () =>
+      rpcError(anon, "join_session", {
+        p_join_token: session.joinToken,
+        p_display_name: "Zed",
+        p_player_secret: secret(),
+      }),
+    );
+    // Normal use still works once the bucket is empty.
+    expect((await rpc(anon, "get_join_info", { p_join_token: session.joinToken })).sessionId).toBe(
+      session.sessionId,
+    );
+  });
+});
+
+describe("photo storage", () => {
+  it("hosts can list only their own photo folder", async () => {
+    const mine = `${alice}/${randomUUID()}.jpg`;
+    await as(
+      host(alice),
+      "insert into storage.objects (bucket_id, name) values ('question-images', $1)",
+      [mine],
+    );
+    expect(
+      await as(
+        host(alice),
+        "select name from storage.objects where bucket_id = 'question-images' and name = $1",
+        [mine],
+      ),
+    ).toHaveLength(1);
+    expect(
+      await as(
+        host(bob),
+        "select name from storage.objects where bucket_id = 'question-images' and name = $1",
+        [mine],
+      ),
+    ).toHaveLength(0);
+    expect(
+      await as(host(bob), "select name from storage.objects where bucket_id = 'question-images'"),
+    ).toHaveLength(0);
   });
 });
