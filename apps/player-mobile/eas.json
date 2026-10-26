@@ -1,9 +1,39 @@
 {
-  "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
-  "build": {
-    "development": { "developmentClient": true, "distribution": "internal", "ios": { "image": "latest" } },
-    "preview": { "distribution": "internal", "ios": { "image": "latest" }, "android": { "buildType": "apk" } },
-    "production": { "autoIncrement": true, "ios": { "image": "latest" } }
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
   },
-  "submit": { "production": {} }
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "image": "latest"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "ios": {
+        "image": "latest"
+      },
+      "env": {
+        "EAS_PROJECT_ID": "c83228d6-3a73-4630-b2fc-0e0ad83671ed",
+        "EXPO_PUBLIC_SITE_URL": "https://buzgame.netlify.app",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "forsakaspotify1@gmail.com",
+        "IOS_BUNDLE_ID": "com.buzzavid.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
 }
