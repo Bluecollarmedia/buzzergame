@@ -5,6 +5,7 @@
   },
   "build": {
     "development": {
+      "channel": "development",
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
@@ -12,6 +13,7 @@
       }
     },
     "preview": {
+      "channel": "preview",
       "distribution": "internal",
       "ios": {
         "image": "latest"
@@ -21,6 +23,7 @@
       }
     },
     "production": {
+      "channel": "production",
       "autoIncrement": true,
       "ios": {
         "image": "latest"
