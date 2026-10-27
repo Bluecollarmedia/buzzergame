@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Ban, Check, Copy, KeyRound, Plus, RefreshCw, Search } from "lucide-react";
 import {
-  errorMessage, type AdminAccessCode, type AdminAuditEntry, type AdminHost, type AdminSession,
+  errorMessage, type AdminAccessCode, type AdminAuditEntry, type AdminHost, type AdminSession, type AppSettings,
 } from "@crowdquiz/shared";
 import { useApi } from "@/lib/useApi";
 import { formatDateTime } from "@/lib/format";
@@ -98,7 +98,71 @@ function Overview() {
         ))}
       </div>
       <p className="mt-4 text-xs text-ink-subtle">Server time {formatDateTime(String(data.serverNow))}</p>
+      <Switches />
     </div>
+  );
+}
+
+function Switches() {
+  const api = useApi();
+  const toast = useToast();
+  const { data, error, setData } = useLoad<AppSettings>(() => api.admin.getSettings());
+  const [busy, setBusy] = useState<keyof AppSettings | null>(null);
+  if (error) return <Alert>{error}</Alert>;
+  if (!data) return null;
+
+  const flip = async (key: "freeHosting" | "photoUploads", on: boolean, msg: string) => {
+    setBusy(key);
+    try {
+      setData(await api.admin.updateSettings({ [key]: on }));
+      toast("success", msg);
+    } catch (e) {
+      toast("error", errorMessage(e));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const rows: Array<{ key: "freeHosting" | "photoUploads"; title: string; on: string; off: string }> = [
+    {
+      key: "freeHosting",
+      title: "Free hosting",
+      on: "On: anyone signed in can host games without an access code.",
+      off: "Off: hosting needs an access code or a grant from you.",
+    },
+    {
+      key: "photoUploads",
+      title: "Photo uploads",
+      on: "On: hosts can add photos to questions (10 on free accounts, 200 with hosting access).",
+      off: "Off: nobody can upload new photos. Photos already on quizzes still show.",
+    },
+  ];
+
+  return (
+    <Card className="mt-6 divide-y divide-line">
+      {rows.map((r) => {
+        const on = data[r.key];
+        return (
+          <div key={r.key} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="flex items-center gap-2 font-medium text-ink">
+                {r.title} <Badge tone={on ? "success" : "neutral"}>{on ? "On" : "Off"}</Badge>
+              </p>
+              <p className="text-sm text-ink-muted">{on ? r.on : r.off}</p>
+            </div>
+            <Button
+              variant={on ? "secondary" : "primary"}
+              size="sm"
+              loading={busy === r.key}
+              disabled={busy !== null}
+              onClick={() => void flip(r.key, !on, `${r.title} turned ${on ? "off" : "on"}`)}
+            >
+              Turn {on ? "off" : "on"}
+            </Button>
+          </div>
+        );
+      })}
+    </Card>
   );
 }
 

@@ -14,7 +14,10 @@ const FREE_PHOTOS = 10;
  */
 export async function pickQuestionPhoto(userId: string): Promise<QuestionMedia | null> {
   const quota = await getSupabase().rpc("my_photo_quota");
-  const q = quota.data as { used: number; limit: number } | null;
+  const q = quota.data as { used: number; limit: number; uploadsEnabled?: boolean } | null;
+  if (q && q.uploadsEnabled === false) {
+    throw new Error("Photo uploads are turned off right now.");
+  }
   if (q && q.used >= q.limit) {
     throw new Error(
       q.limit <= FREE_PHOTOS

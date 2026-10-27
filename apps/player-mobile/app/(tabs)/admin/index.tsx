@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Pressable, Share, Text, View } from "react-native";
+import { Alert, Pressable, Share, Switch, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
-import { errorMessage, type AdminAccessCode, type AdminHost, type AdminSession } from "@crowdquiz/shared";
+import { errorMessage, type AdminAccessCode, type AdminHost, type AdminSession, type AppSettings } from "@crowdquiz/shared";
 import { Glass } from "@/components/glass";
 import { AuthGate } from "@/components/AuthGate";
 import { Button, Card, Empty, Field, Page, Pill, SectionTitle, styles } from "@/components/ui";
@@ -39,6 +39,7 @@ export default function Admin() {
       {user && !isAdmin && <Empty title="Admins only" body="This account isn't an admin." />}
       {user && isAdmin && (
         <>
+          <Switches />
           <View style={[styles.row, { gap: space.sm }]}>
             {SECTIONS.map((s) => (
               <Pressable key={s.key} onPress={() => { feel.tap(); setSection(s.key); }} style={{ flex: 1 }} accessibilityRole="tab" accessibilityState={{ selected: section === s.key }}>
@@ -54,6 +55,80 @@ export default function Admin() {
         </>
       )}
     </Page>
+  );
+}
+
+type SwitchKey = "freeHosting" | "photoUploads";
+const SWITCHES: { key: SwitchKey; title: string; on: string; off: string }[] = [
+  {
+    key: "freeHosting",
+    title: "Free hosting",
+    on: "Anyone signed in can host games without an access code.",
+    off: "Hosting needs an access code or a grant from you.",
+  },
+  {
+    key: "photoUploads",
+    title: "Photo uploads",
+    on: "Hosts can add photos to questions.",
+    off: "Nobody can upload new photos. Photos already on quizzes still show.",
+  },
+];
+
+/** App-wide on/off switches. Changes apply to everyone straight away. */
+function Switches() {
+  const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [busy, setBusy] = useState<SwitchKey | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setSettings(await getApi().admin.getSettings());
+      setError(null);
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  }, []);
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
+
+  const flip = async (key: SwitchKey, on: boolean) => {
+    feel.tap();
+    setBusy(key);
+    setError(null);
+    try {
+      setSettings(await getApi().admin.updateSettings({ [key]: on }));
+    } catch (e) {
+      setError(errorMessage(e));
+      feel.wrong();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <>
+      <SectionTitle>Switches</SectionTitle>
+      <Card style={{ gap: space.md }}>
+        {SWITCHES.map((sw) => {
+          const on = settings ? settings[sw.key] : false;
+          return (
+            <View key={sw.key} style={[styles.row, { gap: space.md, alignItems: "center" }]}>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={{ color: colors.text, fontWeight: "700", fontSize: 16 }}>{sw.title}</Text>
+                <Text style={styles.small}>{settings ? (on ? sw.on : sw.off) : "Loading…"}</Text>
+              </View>
+              <Switch
+                value={on}
+                disabled={!settings || busy !== null}
+                onValueChange={(v) => void flip(sw.key, v)}
+                trackColor={{ true: colors.good }}
+                accessibilityLabel={sw.title}
+              />
+            </View>
+          );
+        })}
+        {error ? <Text style={styles.error} accessibilityRole="alert">{error}</Text> : null}
+      </Card>
+    </>
   );
 }
 
