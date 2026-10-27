@@ -85,7 +85,7 @@ describe("photo limits and expiry", () => {
     const free = await createUser();
     for (let i = 0; i < 10; i++) await add(free);
     await expect(add(free)).rejects.toThrow(/row-level security/);
-    expect(await rpc(host(free), "my_photo_quota")).toEqual({ used: 10, limit: 10 });
+    expect(await rpc(host(free), "my_photo_quota")).toEqual({ used: 10, limit: 10, uploadsEnabled: true });
 
     const paid = await createUser();
     await grantAccess(paid);

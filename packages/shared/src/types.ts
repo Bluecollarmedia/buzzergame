@@ -148,6 +148,8 @@ export interface SessionResults {
 export interface EntitlementStatus {
   active: boolean;
   isAdmin: boolean;
+  /** True while an admin has turned on free hosting (no access code needed). */
+  freeHosting?: boolean;
   plan: string | null;
   startsAt: string | null;
   expiresAt: string | null;

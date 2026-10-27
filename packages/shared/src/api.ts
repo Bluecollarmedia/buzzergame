@@ -106,7 +106,7 @@ export function createGameApi(sb: AnyClient) {
 
     // Access
     myEntitlement: () => rpc<EntitlementStatus>(sb, "my_entitlement"),
-    myPhotoQuota: () => rpc<{ used: number; limit: number }>(sb, "my_photo_quota"),
+    myPhotoQuota: () => rpc<PhotoQuota>(sb, "my_photo_quota"),
     redeemAccessCode: (code: string) =>
       rpc<{ entitlementId: string; plan: string; startsAt: string; expiresAt: string }>(sb, "redeem_access_code", {
         p_code: code,
@@ -114,6 +114,12 @@ export function createGameApi(sb: AnyClient) {
 
     // Admin
     admin: {
+      getSettings: () => rpc<AppSettings>(sb, "admin_get_settings"),
+      updateSettings: (changes: { freeHosting?: boolean; photoUploads?: boolean }) =>
+        rpc<AppSettings>(sb, "admin_update_settings", {
+          p_free_hosting: changes.freeHosting ?? null,
+          p_photo_uploads: changes.photoUploads ?? null,
+        }),
       overview: () => rpc<Record<string, number | string>>(sb, "admin_overview"),
       listHosts: (search?: string) => rpc<AdminHost[]>(sb, "admin_list_hosts", { p_search: search ?? null }),
       setHostDisabled: (userId: string, disabled: boolean, reason?: string) =>
@@ -149,6 +155,22 @@ export function createGameApi(sb: AnyClient) {
 }
 
 export type GameApi = ReturnType<typeof createGameApi>;
+
+/** App-wide switches set in the Admin tab. */
+export interface AppSettings {
+  /** Anyone signed in can host without an access code. */
+  freeHosting: boolean;
+  /** Hosts can upload new question photos. */
+  photoUploads: boolean;
+  updatedAt: string | null;
+}
+
+export interface PhotoQuota {
+  used: number;
+  limit: number;
+  /** False while an admin has turned photo uploads off for everyone. */
+  uploadsEnabled?: boolean;
+}
 
 export interface AdminHost {
   id: string;

@@ -11,6 +11,9 @@ export function AccessSummary({ ent }: { ent: EntitlementStatus | null }) {
   if (ent.isAdmin && !ent.expiresAt) {
     return <p className="text-sm text-ink-muted">Administrator: hosting is always available.</p>;
   }
+  if (ent.freeHosting && !ent.expiresAt) {
+    return <p className="text-sm text-ink-muted">Hosting is free right now. No access code needed.</p>;
+  }
   if (!ent.active) {
     return (
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
