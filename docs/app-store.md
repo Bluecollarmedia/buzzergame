@@ -77,6 +77,24 @@ eas submit --platform ios                         # uploads to App Store Connect
 1. Install the build from **TestFlight** on a real iPhone and work through the checklist in Part 4. Do this before pressing Submit for Review.
 2. In App Store Connect, choose the build, fill in the review notes, and **Submit for Review**. Typical review time is 1 to 3 days.
 
+### 8. Over-the-air updates (after release)
+
+Builds made from this version on include EAS Update, so small fixes can reach phones without a new App Store review. Builds made before it cannot receive updates.
+
+On Windows, run `update-ios.bat` in `apps/player-mobile`. Elsewhere:
+
+```bash
+cd apps/player-mobile
+EXPO_PUBLIC_SITE_URL=https://buzgame.netlify.app EXPO_PUBLIC_SUPPORT_EMAIL=forsakaspotify1@gmail.com \
+  eas update --channel production --environment production --platform ios --message "What changed"
+```
+
+- Phones download the update in the background and use it the next time the app is opened.
+- Only JavaScript, text, images and styling can change this way. A new permission, native package or Expo SDK upgrade needs a new build and App Store release.
+- An update only reaches builds with the same `version` in `app.config.ts`. When you make a new store build with native changes, bump `version` first.
+- Apple allows updates that fix bugs or adjust the app, not ones that change what the app is for.
+- To undo a bad update, run `eas update:rollback` or publish the previous code again.
+
 ## Part 2. How the app meets Apple's rules
 
 | Rule | What the app does |

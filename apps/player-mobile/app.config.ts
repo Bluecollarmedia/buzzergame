@@ -14,6 +14,9 @@ const webHost = (() => {
 })();
 const iosBundleId = process.env.IOS_BUNDLE_ID ?? "com.buzzavid.app";
 const androidPackage = process.env.ANDROID_PACKAGE_NAME ?? "com.buzzavid.app";
+// The EAS project the App Store build comes from. Over-the-air updates are
+// fetched from this project, so it must match the one used by eas build.
+const easProjectId = process.env.EAS_PROJECT_ID ?? "c83228d6-3a73-4630-b2fc-0e0ad83671ed";
 const CAMERA = "Buzzavid uses the camera only to scan a game's QR code. Nothing is recorded or saved.";
 const PHOTOS = "Buzzavid needs your photos only when you choose a picture to put on a quiz question.";
 
@@ -82,10 +85,14 @@ const config: ExpoConfig = {
     ["expo-image-picker", { photosPermission: PHOTOS, cameraPermission: false, microphonePermission: false }],
     ["expo-splash-screen", { image: "./assets/splash-icon.png", imageWidth: 200, resizeMode: "contain", backgroundColor: "#080B18" }],
   ],
+  // Over-the-air updates (EAS Update). An update only reaches builds with the
+  // same app version, so bump "version" whenever native code changes.
+  runtimeVersion: { policy: "appVersion" },
+  updates: { url: `https://u.expo.dev/${easProjectId}` },
   experiments: { typedRoutes: true },
   extra: {
     webHost,
-    eas: process.env.EAS_PROJECT_ID ? { projectId: process.env.EAS_PROJECT_ID } : undefined,
+    eas: { projectId: easProjectId },
   },
 };
 
