@@ -81,8 +81,17 @@ export function formatRoomCode(code: string): string {
   return code.length === 6 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
 }
 
-/** Public address of a question photo stored in the `question-images` bucket. */
-export function buildQuestionImageUrl(supabaseUrl: string, path: string | null | undefined): string | null {
-  if (!path || !/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/.test(path)) return null;
-  return `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/question-images/${path}`;
+/** Question photo paths look like <host id>/<random id>.jpg. */
+export function isQuestionImagePath(path: string | null | undefined): path is string {
+  return !!path && /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/.test(path);
+}
+
+/**
+ * Address of a question photo. The website's /photos route sends the browser
+ * on to wherever the file is stored (Cloudflare R2). Pass "" on the website
+ * itself for a same-site address.
+ */
+export function buildQuestionImageUrl(siteUrl: string, path: string | null | undefined): string | null {
+  if (!isQuestionImagePath(path)) return null;
+  return `${siteUrl.replace(/\/+$/, "")}/photos/${path}`;
 }

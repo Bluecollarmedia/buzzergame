@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Session, User } from "@supabase/supabase-js";
 import { errorMessage } from "@crowdquiz/shared";
 import { getApi, getSupabase } from "./supabase";
+import { deleteAllMyPhotos } from "./photos";
 import { config, isConfigured } from "./config";
 
 interface AuthState {
@@ -73,17 +74,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteAccount = useCallback(async () => {
     const sb = getSupabase();
     const { data: u } = await sb.auth.getUser();
-    const uid = u.user?.id;
-    if (!uid) throw new Error("Please sign in again.");
-    // Remove the host's photos first; they sit outside the database.
-    try {
-      const { data: files } = await sb.storage.from("question-images").list(uid, { limit: 1000 });
-      if (files && files.length > 0) {
-        await sb.storage.from("question-images").remove(files.map((f) => `${uid}/${f.name}`));
-      }
-    } catch {
-      /* the account is still deleted; orphaned photos are unreachable */
-    }
+    if (!u.user?.id) throw new Error("Please sign in again.");
+    // Remove the host's photos first; they sit outside the database. Any the
+    // website misses are queued for clean-up when the account is deleted.
+    await deleteAllMyPhotos().catch(() => {});
     try {
       await getApi().deleteMyAccount();
     } catch (e) {

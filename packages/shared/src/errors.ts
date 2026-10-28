@@ -18,6 +18,10 @@ export const ERROR_MESSAGES = {
   too_many_live_sessions: "You have too many games running. End one before starting another.",
   too_many_questions: "A quiz can have up to 200 questions.",
   too_many_quizzes: "You've reached the maximum number of quizzes.",
+  // Photos
+  photo_limit: "You've reached your photo limit. Remove a photo you don't need, then try again.",
+  photo_uploads_off: "Photo uploads are turned off right now.",
+  photo_upload_failed: "Couldn't upload the photo. Check your connection and try again.",
   // Joining
   session_not_found: "We couldn't find that game. Check the code or scan the QR code again.",
   session_ended: "This game has ended.",

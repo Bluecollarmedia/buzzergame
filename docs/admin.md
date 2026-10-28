@@ -37,12 +37,11 @@ Hosts redeem codes at **Account → Redeem a code**. If the host already has acc
 
 Admins can always launch games without a code.
 
-## Photo storage clean-up
+## Photo storage (Cloudflare R2)
 
-Every night the database detaches old photos (30 days after a quiz's last game, or 90 days after the last edit if it was never played) and deletes drafts untouched for 60 days. The files themselves are removed by a small script, because a database cannot delete files from storage:
+Question photos are stored in a Cloudflare R2 bucket. The website uploads and deletes them (`/api/photos`) and sends photo addresses on to R2 (`/photos/...`). It needs these Netlify environment variables: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` and `PHOTO_PUBLIC_URL` (the bucket's public address).
 
-```
-SUPABASE_URL=https://xxxx.supabase.co SUPABASE_SERVICE_ROLE_KEY=... pnpm purge:photos
-```
+Overview tab → **Photo storage** has two buttons:
 
-Run it now and then (weekly is plenty). Keep the service-role key private. Moving photo storage to Cloudflare R2 later would let a lifecycle rule do this automatically.
+- **Copy old photos to Cloudflare** copies photos uploaded before the move out of the old Supabase bucket. It skips anything already copied, so it is safe to run again. Until a photo is copied, it is still shown from Supabase.
+- **Delete expired photos** removes files the nightly clean-up has queued. Every night the database detaches old photos (30 days after a quiz's last game, or 90 days after the last edit if it was never played), deletes drafts untouched for 60 days, and queues photos nothing uses. Press it now and then (weekly is plenty).

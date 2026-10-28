@@ -34,7 +34,7 @@ export function getApi(): GameApi {
   return api;
 }
 
-/** Public address of a stored question photo. */
+/** Address of a question photo (the website forwards it to Cloudflare R2). */
 export function questionImageUrl(path: string | null | undefined): string | null {
-  return buildQuestionImageUrl(config.supabaseUrl, path);
+  return buildQuestionImageUrl(config.siteUrl, path);
 }

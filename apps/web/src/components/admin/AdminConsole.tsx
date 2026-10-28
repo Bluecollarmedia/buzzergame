@@ -6,6 +6,7 @@ import {
   errorMessage, type AdminAccessCode, type AdminAuditEntry, type AdminHost, type AdminSession, type AppSettings,
 } from "@crowdquiz/shared";
 import { useApi } from "@/lib/useApi";
+import { getSupabase } from "@/lib/supabase/client";
 import { formatDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, inputClass } from "@/components/ui/Field";
@@ -99,6 +100,7 @@ function Overview() {
       </div>
       <p className="mt-4 text-xs text-ink-subtle">Server time {formatDateTime(String(data.serverNow))}</p>
       <Switches />
+      <PhotoStorage />
     </div>
   );
 }
@@ -162,6 +164,99 @@ function Switches() {
           </div>
         );
       })}
+    </Card>
+  );
+}
+
+/** Calls an admin photo route on this website with the admin's sign-in. */
+async function photoAdminCall<T>(path: string, body: unknown = {}): Promise<T> {
+  const { data } = await getSupabase().auth.getSession();
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` },
+    body: JSON.stringify(body),
+  });
+  const json = (await res.json().catch(() => null)) as (T & { error?: string }) | null;
+  if (json?.error === "not_configured") {
+    throw new Error("Cloudflare R2 isn't set up on the website yet. Add the R2 settings in Netlify and redeploy.");
+  }
+  if (!res.ok || !json) throw new Error(errorMessage(new Error(json?.error ?? "network")));
+  return json;
+}
+
+function PhotoStorage() {
+  const toast = useToast();
+  const [busy, setBusy] = useState<"copy" | "purge" | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const copy = async () => {
+    setBusy("copy");
+    let after = "";
+    const t = { copied: 0, skipped: 0, missing: 0, failed: 0 };
+    try {
+      for (;;) {
+        const r = await photoAdminCall<{ copied: number; skipped: number; missing: number; failed: number; next: string | null; done: boolean }>(
+          "/api/admin/photos/copy",
+          { after },
+        );
+        t.copied += r.copied;
+        t.skipped += r.skipped;
+        t.missing += r.missing;
+        t.failed += r.failed;
+        setStatus(`Copying… ${t.copied} copied, ${t.skipped} already there`);
+        if (r.done || !r.next) break;
+        after = r.next;
+      }
+      const msg = `${t.copied} copied, ${t.skipped} already in Cloudflare` +
+        (t.missing ? `, ${t.missing} not found in Supabase` : "") +
+        (t.failed ? `, ${t.failed} failed (run it again)` : "");
+      setStatus(msg);
+      toast(t.failed ? "error" : "success", t.failed ? "Some photos didn't copy. Run it again." : "Photos copied to Cloudflare");
+    } catch (e) {
+      setStatus(null);
+      toast("error", (e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const purge = async () => {
+    setBusy("purge");
+    let deleted = 0;
+    try {
+      for (let i = 0; i < 100; i++) {
+        const r = await photoAdminCall<{ deleted: number; failed: number; done: boolean }>("/api/admin/photos/purge");
+        deleted += r.deleted;
+        setStatus(`Deleting… ${deleted} removed`);
+        if (r.done) break;
+      }
+      setStatus(`${deleted} expired photo${deleted === 1 ? "" : "s"} deleted`);
+      toast("success", "Expired photos deleted");
+    } catch (e) {
+      setStatus(null);
+      toast("error", (e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <Card className="mt-6 flex flex-col gap-3 p-4">
+      <div>
+        <p className="font-medium text-ink">Photo storage (Cloudflare R2)</p>
+        <p className="text-sm text-ink-muted">
+          Copy photos uploaded before the move, and delete photos the nightly clean-up has marked as expired. Both are safe to run again.
+        </p>
+        {status && <p className="mt-2 text-sm text-ink">{status}</p>}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" loading={busy === "copy"} disabled={busy !== null} onClick={() => void copy()}>
+          Copy old photos to Cloudflare
+        </Button>
+        <Button size="sm" variant="secondary" loading={busy === "purge"} disabled={busy !== null} onClick={() => void purge()}>
+          Delete expired photos
+        </Button>
+      </div>
     </Card>
   );
 }

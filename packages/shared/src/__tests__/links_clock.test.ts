@@ -61,10 +61,9 @@ describe("random", () => {
 describe("question photo address", () => {
   const id = "123e4567-e89b-12d3-a456-426614174000";
   it("builds the public storage address and rejects odd paths", () => {
-    expect(buildQuestionImageUrl("https://x.supabase.co/", `${id}/${id}.jpg`)).toBe(
-      `https://x.supabase.co/storage/v1/object/public/question-images/${id}/${id}.jpg`,
-    );
-    expect(buildQuestionImageUrl("https://x.supabase.co", "../secret.jpg")).toBeNull();
-    expect(buildQuestionImageUrl("https://x.supabase.co", null)).toBeNull();
+    expect(buildQuestionImageUrl("https://play.example.com/", `${id}/${id}.jpg`)).toBe(`https://play.example.com/photos/${id}/${id}.jpg`);
+    expect(buildQuestionImageUrl("", `${id}/${id}.jpg`)).toBe(`/photos/${id}/${id}.jpg`);
+    expect(buildQuestionImageUrl("https://play.example.com", "../secret.jpg")).toBeNull();
+    expect(buildQuestionImageUrl("https://play.example.com", null)).toBeNull();
   });
 });

@@ -54,6 +54,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Skip static files, images, player/projector routes (no host session needed).
-    "/((?!_next/static|_next/image|favicon.ico|j/|present/|join|api/health|\\.well-known|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|j/|present/|join|api/health|api/photos|photos/|\\.well-known|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

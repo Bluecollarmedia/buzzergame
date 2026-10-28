@@ -185,7 +185,7 @@ export default function QuizEditor() {
     if (!user) return;
     setUploading(q.id);
     try {
-      const media = await pickQuestionPhoto(user.id);
+      const media = await pickQuestionPhoto();
       if (media) {
         const old = q.media?.path;
         updateQuestion(q.id, { media });

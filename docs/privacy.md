@@ -19,9 +19,9 @@ On the device, the website keeps the per-game secret in `localStorage` and the a
 
 Hosts have an account with an email address, a display name and a password, handled by Supabase Auth. Their quizzes, games, access history and audit entries are linked to their account.
 
-Hosts can attach one photo to a question from the Buzzavid app. Photos are stored in the public `question-images` bucket under `<host id>/<random id>.jpg` (the address is unguessable but not secret) and are shown on the projector and host screens. Only the owning host can add or remove files in their folder.
+Hosts can attach one photo to a question from the Buzzavid app. Photos are stored in a public Cloudflare R2 bucket under `<host id>/<random id>.jpg` (the address is unguessable but not secret) and are shown on the projector and host screens. Uploads and deletions go through the website's `/api/photos` route, which acts with the host's own sign-in, so only the owning host can add or remove their photos. The database keeps the list of photos (`private.photo_files`) to enforce the photo limit and the Photo uploads switch. Photos uploaded before the move sat in the Supabase `question-images` bucket and are copied to R2 from the Admin tab.
 
-Hosts can delete their account in the app (`delete_my_account()`). That removes the Supabase Auth user, which cascades to their profile, quizzes, questions, games (with guest names, answers and scores), entitlements and redemptions, after the app has removed their photos. Audit log rows keep only the random user id until the 365-day purge.
+Hosts can delete their account in the app (`delete_my_account()`). That removes the Supabase Auth user, which cascades to their profile, quizzes, questions, games (with guest names, answers and scores), entitlements and redemptions, after the app has removed their photos (any left over are queued and deleted from the Admin tab). Audit log rows keep only the random user id until the 365-day purge.
 
 ## Retention
 
