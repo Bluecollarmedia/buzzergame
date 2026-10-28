@@ -10,7 +10,7 @@
 
 **Hosts** (email and password account, the same accounts as the website)
 - write quizzes and questions in an editor where everything saves as you type (same server-side drafts as the website, plus a backup on the phone that is replayed if the app is killed mid-save)
-- add one photo per question (system photo picker, resized to 1600 px and uploaded to their own folder in the `question-images` bucket); it shows on the big screen
+- add one photo per question (system photo picker, resized to 1280 px and uploaded through the website to their own folder in the Cloudflare R2 photo bucket); it shows on the big screen
 - start a game and run it from the phone: QR code and room code, live player list, start, pause, skip, replay, end, scores, play again
 - delete their account from the Account tab (required by Apple)
 

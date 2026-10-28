@@ -1,6 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { as, createQuiz, createUser, grantAccess, host, makeAdmin, rpc, rpcError } from "./db";
+import { createQuiz, createUser, grantAccess, host, makeAdmin, rpc, rpcError } from "./db";
 import { mcQuiz } from "./fixtures";
 
 let admin: string;
@@ -10,8 +9,7 @@ beforeAll(async () => {
 });
 
 const set = (changes: Record<string, boolean>) => rpc(host(admin), "admin_update_settings", changes);
-const addPhoto = (uid: string) =>
-  as(host(uid), "insert into storage.objects (bucket_id, name) values ('question-images', $1)", [`${uid}/${randomUUID()}.jpg`]);
+const addPhoto = (uid: string) => rpc<string>(host(uid), "reserve_question_photo");
 
 // Other test files share the database, so always put the defaults back.
 afterEach(async () => {
@@ -60,7 +58,7 @@ describe("admin switches", () => {
     await grantAccess(paid);
     await set({ p_photo_uploads: false, p_free_hosting: true });
     for (const uid of [free, paid, admin]) {
-      await expect(addPhoto(uid)).rejects.toThrow(/row-level security/);
+      expect(await rpcError(host(uid), "reserve_question_photo")).toBe("photo_uploads_off");
       expect(await rpc(host(uid), "my_photo_quota")).toMatchObject({ limit: 0, uploadsEnabled: false });
     }
     // Changing one switch leaves the other alone.
