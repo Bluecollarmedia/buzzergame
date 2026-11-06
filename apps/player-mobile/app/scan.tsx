@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
 import { Keyboard, X } from "lucide-react-native";
 import { errorMessage, parseJoinInput } from "@crowdquiz/shared";
@@ -76,7 +77,8 @@ export default function Scan() {
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
       <CameraView style={StyleSheet.absoluteFill} facing="back" barcodeScannerSettings={{ barcodeTypes: ["qr"] }} onBarcodeScanned={onScan} />
-      <Screen style={{ backgroundColor: "transparent" }}>
+      {/* Not <Screen>: it paints the opaque backdrop, which hid the camera feed. */}
+      <SafeAreaView edges={["top", "bottom"]} style={local.overlay}>
         <View style={{ flexDirection: "row", justifyContent: "flex-end", paddingTop: 8 }}>
           <Button title="Close" variant="glass" small onPress={close} icon={<X color={colors.text} size={18} />} />
         </View>
@@ -93,11 +95,12 @@ export default function Scan() {
             <Text style={[styles.body, { textAlign: "center", color: colors.text }]}>Point your camera at the QR code on the big screen.</Text>
           </Glass>
         </View>
-      </Screen>
+      </SafeAreaView>
     </View>
   );
 }
 
 const local = StyleSheet.create({
+  overlay: { flex: 1, paddingHorizontal: space.xl },
   frame: { width: 260, height: 260, borderRadius: 36, borderWidth: 4, borderColor: "rgba(255,255,255,0.92)" },
 });
