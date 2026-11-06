@@ -48,6 +48,27 @@ export function questionIssues(q: QuestionDraft, index: number): QuestionIssue[]
   return issues;
 }
 
+const joinWords = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
+/**
+ * Hosts write one question at a time. Returns the first unfinished question
+ * (no prompt, an empty answer, or no correct answer) and a friendly message
+ * saying what it still needs, or null when every question is finished.
+ */
+export function firstUnfinishedQuestion(questions: QuestionDraft[]): { index: number; message: string } | null {
+  for (let index = 0; index < questions.length; index++) {
+    const q = questions[index]!;
+    const missing: string[] = [];
+    if (!q.prompt.trim()) missing.push("the question");
+    const emptyAnswers = (["A", "B", "C", "D"] as const).filter((_, n) => !(q.choices[n] ?? "").trim());
+    if (emptyAnswers.length === 4) missing.push("its answers");
+    else if (emptyAnswers.length) missing.push(`${emptyAnswers.length === 1 ? "answer" : "answers"} ${joinWords([...emptyAnswers])}`);
+    if (q.correctIndex === null || q.correctIndex === undefined) missing.push("a correct answer");
+    if (missing.length) return { index, message: `Finish question ${index + 1} first. It still needs ${joinWords(missing)}.` };
+  }
+  return null;
+}
+
 /** Mirrors private.quiz_problems() in the database. */
 export function validateQuizForPlay(questions: QuestionDraft[]): string[] {
   if (questions.length === 0) return ["Add at least one question"];
