@@ -10,3 +10,7 @@ export const links = {
   support: site ? `${site}/support` : "",
 };
 export const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? "forsakaspotify1@gmail.com";
+
+/** The owner's WhatsApp number (country code + number, digits only) for hosting access requests. */
+export const WHATSAPP_NUMBER = process.env.EXPO_PUBLIC_WHATSAPP_NUMBER ?? "18482264055";
+export const WHATSAPP_ACCESS_MESSAGE = "Hi, I'd like to play the game. Can I get 24-hour access?";

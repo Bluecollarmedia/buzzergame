@@ -206,7 +206,7 @@ function Codes() {
           <Text style={styles.small}>Copy it now. It is shown only once.</Text>
           <Text selectable style={{ color: colors.text, fontSize: 26, fontWeight: "800", letterSpacing: 1 }}>{fresh}</Text>
           <Button title="Share" variant="glass" small onPress={() => void Share.share({ message: `Your hosting code: ${fresh}` })} />
-          <Text style={styles.small}>People redeem it at the website under Account, then Redeem a code.</Text>
+          <Text style={styles.small}>People enter it in the app under Account (or when they tap Start a game), or on the website under Account, then Redeem a code.</Text>
         </Card>
       ) : null}
 
