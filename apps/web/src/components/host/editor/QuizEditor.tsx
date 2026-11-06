@@ -6,7 +6,7 @@ import {
   AlertCircle, ArrowDown, ArrowLeft, ArrowUp, Check, CheckCircle2, CloudOff, Copy, Eye, Loader2, Play, Plus, Settings2, Trash2,
 } from "lucide-react";
 import {
-  ANSWER_COLORS, GAME_MODE_INFO, LIMITS, errorMessage, normalizeSessionSettings, questionIssues, validateQuizForPlay,
+  ANSWER_COLORS, GAME_MODE_INFO, LIMITS, errorMessage, firstUnfinishedQuestion, normalizeSessionSettings, questionIssues, validateQuizForPlay,
   type SessionSettings,
 } from "@crowdquiz/shared";
 import { getSupabase } from "@/lib/supabase/client";
@@ -129,9 +129,22 @@ export function QuizEditor({ quizId }: { quizId: string }) {
   const selectedIndex = questions.findIndex((q) => q.id === selected);
   const current = selectedIndex >= 0 ? questions[selectedIndex]! : null;
 
-  const addQuestion = () =>
-    structural(() => api.addQuestion(quizId, current ? current.position : null), (r) => setSelected((r as { id: string }).id));
-  const duplicate = (q: QuestionRow) => structural(() => api.duplicateQuestion(q.id), (r) => setSelected((r as { id: string }).id));
+  // One question at a time: a new one (or a copy) only once every question is finished.
+  const unfinished = useMemo(() => firstUnfinishedQuestion(questions.map(toDraft)), [questions]);
+  const blockIfUnfinished = () => {
+    if (!unfinished) return false;
+    toast("error", unfinished.message);
+    setSelected(questions[unfinished.index]!.id);
+    return true;
+  };
+  const addQuestion = () => {
+    if (blockIfUnfinished()) return;
+    return structural(() => api.addQuestion(quizId, current ? current.position : null), (r) => setSelected((r as { id: string }).id));
+  };
+  const duplicate = (q: QuestionRow) => {
+    if (blockIfUnfinished()) return;
+    return structural(() => api.duplicateQuestion(q.id), (r) => setSelected((r as { id: string }).id));
+  };
   const remove = async () => {
     if (!toDelete) return;
     const idx = questions.findIndex((q) => q.id === toDelete.id);

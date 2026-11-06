@@ -5,7 +5,7 @@ import {
   AlertCircle, Check, CheckCircle2, ChevronDown, ChevronUp, CloudOff, Copy, ImagePlus, Loader, Minus, Play, Plus, Trash2, X,
 } from "lucide-react-native";
 import {
-  ANSWER_COLORS, GAME_MODE_INFO, LIMITS, errorMessage, normalizeSessionSettings, questionIssues, validateQuizForPlay, toAppError,
+  ANSWER_COLORS, GAME_MODE_INFO, LIMITS, errorMessage, firstUnfinishedQuestion, normalizeSessionSettings, questionIssues, validateQuizForPlay, toAppError,
   type SessionSettings,
 } from "@crowdquiz/shared";
 import { Backdrop, Glass } from "@/components/glass";
@@ -40,6 +40,7 @@ export default function QuizEditor() {
   const [launching, setLaunching] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [finishFirst, setFinishFirst] = useState<string | null>(null);
 
   const fetchQuiz = useCallback(async () => {
     const sb = getSupabase();
@@ -149,11 +150,27 @@ export default function QuizEditor() {
 
   const index = questions.findIndex((q) => q.id === open);
   const current = index >= 0 ? questions[index]! : null;
+  // One question at a time: a new one (or a copy) only once every question is finished.
+  const unfinished = useMemo(() => firstUnfinishedQuestion(questions.map(toDraft)), [questions]);
+  useEffect(() => {
+    if (!unfinished) setFinishFirst(null);
+  }, [unfinished]);
+  const blockIfUnfinished = () => {
+    if (!unfinished) return false;
+    feel.wrong();
+    setFinishFirst(unfinished.message);
+    setOpen(questions[unfinished.index]!.id);
+    return true;
+  };
   const addQuestion = () => {
+    if (blockIfUnfinished()) return;
     feel.tap();
     return structural(() => api.addQuestion(quizId, current ? current.position : questions.length ? questions[questions.length - 1]!.position : null), (r) => setOpen((r as { id: string }).id));
   };
-  const duplicate = (q: QuestionRow) => structural(() => api.duplicateQuestion(q.id), (r) => setOpen((r as { id: string }).id));
+  const duplicate = (q: QuestionRow) => {
+    if (blockIfUnfinished()) return;
+    return structural(() => api.duplicateQuestion(q.id), (r) => setOpen((r as { id: string }).id));
+  };
   const confirmRemove = (q: QuestionRow) =>
     Alert.alert("Delete question?", "This question will be removed from the quiz.", [
       { text: "Cancel", style: "cancel" },
@@ -477,6 +494,11 @@ export default function QuizEditor() {
         })}
 
         <Button title="Add question" variant="glass" onPress={addQuestion} disabled={busy || questions.length >= LIMITS.maxQuestions} icon={<Plus color={colors.text} size={20} />} />
+        {finishFirst ? (
+          <Text style={[styles.body, { color: colors.warn, textAlign: "center" }]} accessibilityRole="alert">
+            {finishFirst}
+          </Text>
+        ) : null}
 
         {issues.length > 0 && questions.length > 0 && (
           <Card tint="rgba(251,191,36,0.25)" style={{ gap: 4 }}>

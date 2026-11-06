@@ -10,6 +10,7 @@ import {
   normalizeSessionSettings,
   stackedAccessWindow,
   validateQuizForPlay,
+  firstUnfinishedQuestion,
   toAppError,
   errorMessage,
 } from "../index";
@@ -119,5 +120,27 @@ describe("errors", () => {
     expect(e.message).toMatch(/Time's up/);
     expect(errorMessage({ message: "CQ:quiz_invalid", details: "Question 1 needs a prompt" })).toMatch(/Question 1/);
     expect(toAppError(new TypeError("Failed to fetch")).code).toBe("network");
+  });
+});
+
+describe("firstUnfinishedQuestion", () => {
+  const done = { prompt: "2 + 2?", choices: ["3", "4", "5", "6"] as [string, string, string, string], correctIndex: 1 };
+  it("is null when every question is finished", () => {
+    expect(firstUnfinishedQuestion([done, done])).toBeNull();
+    expect(firstUnfinishedQuestion([])).toBeNull();
+  });
+  it("points at the first unfinished question and says what is missing", () => {
+    const blank = { prompt: "", choices: ["", "", "", ""] as [string, string, string, string], correctIndex: null };
+    expect(firstUnfinishedQuestion([done, blank])).toEqual({
+      index: 1,
+      message: "Finish question 2 first. It still needs the question, its answers and a correct answer.",
+    });
+    const partial = { prompt: "Sky?", choices: ["Blue", "", "Red", " "] as [string, string, string, string], correctIndex: null };
+    expect(firstUnfinishedQuestion([partial])!.message).toBe(
+      "Finish question 1 first. It still needs answers B and D and a correct answer.",
+    );
+    expect(firstUnfinishedQuestion([{ ...done, choices: ["3", "4", "", "6"] }])!.message).toBe(
+      "Finish question 1 first. It still needs answer C.",
+    );
   });
 });
