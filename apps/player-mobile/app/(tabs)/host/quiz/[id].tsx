@@ -9,6 +9,7 @@ import {
   type SessionSettings,
 } from "@crowdquiz/shared";
 import { Backdrop, Glass } from "@/components/glass";
+import { HostAccess } from "@/components/HostAccess";
 import { Button, Card, Field, Pill, SectionTitle, Toggle, styles } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { applyBackup, clearBackup, readBackup, writeBackup, type LocalBackup } from "@/lib/backup";
@@ -38,6 +39,7 @@ export default function QuizEditor() {
   const [notice, setNotice] = useState<string | null>(null);
   const [launchError, setLaunchError] = useState<string | null>(null);
   const [launching, setLaunching] = useState(false);
+  const [needsAccess, setNeedsAccess] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [finishFirst, setFinishFirst] = useState<string | null>(null);
@@ -225,6 +227,7 @@ export default function QuizEditor() {
 
   const launch = async () => {
     setLaunchError(null);
+    setNeedsAccess(false);
     setLaunching(true);
     try {
       if (!(await autosave.flush())) throw new Error("Couldn't save your changes. Check your connection and try again.");
@@ -237,11 +240,8 @@ export default function QuizEditor() {
       router.push({ pathname: "/run/[sessionId]", params: { sessionId: s.sessionId } });
     } catch (e) {
       const code = toAppError(e).code;
-      setLaunchError(
-        code === "no_entitlement" || code === "session_limit_reached"
-          ? "This account isn't set up to host games yet. Contact support to turn hosting on."
-          : errorMessage(e),
-      );
+      if (code === "no_entitlement" || code === "session_limit_reached") setNeedsAccess(true);
+      else setLaunchError(errorMessage(e));
       feel.wrong();
     } finally {
       setLaunching(false);
@@ -510,6 +510,15 @@ export default function QuizEditor() {
           </Card>
         )}
 
+        {needsAccess ? (
+          <HostAccess
+            title="Unlock hosting"
+            intro="Enter your access code to start this game. Don't have one? Message us on WhatsApp."
+            onRedeemed={(r) => {
+              if (!r.startsLater) void launch();
+            }}
+          />
+        ) : null}
         {launchError ? <Text style={styles.error} accessibilityRole="alert">{launchError}</Text> : null}
         <Button title="Start a game" onPress={launch} loading={launching} disabled={issues.length > 0} icon={<Play color={colors.text} size={20} />} />
       </ScrollView>

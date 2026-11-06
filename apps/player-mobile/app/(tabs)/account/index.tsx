@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { AuthGate } from "@/components/AuthGate";
+import { HostAccess } from "@/components/HostAccess";
+import { getApi } from "@/lib/supabase";
+import type { EntitlementStatus } from "@crowdquiz/shared";
 import { Button, Card, Page, SectionTitle, Toggle, styles } from "@/components/ui";
 import { APP_NAME } from "@/lib/brand";
 import { useAuth } from "@/lib/auth";
@@ -15,6 +18,15 @@ export default function Account() {
   const haptics = useHapticsEnabled();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [access, setAccess] = useState<EntitlementStatus | null>(null);
+
+  const loadAccess = () => {
+    getApi().myEntitlement().then(setAccess, () => setAccess(null));
+  };
+  useEffect(() => {
+    if (user) loadAccess();
+    else setAccess(null);
+  }, [user?.id]);
 
   const confirmDelete = () =>
     Alert.alert(
@@ -58,6 +70,25 @@ export default function Account() {
           <Text style={styles.h2}>{(user.user_metadata?.display_name as string | undefined) || user.email}</Text>
           <Text style={styles.body}>{user.email}</Text>
         </Card>
+      )}
+
+      {user && (
+        <>
+          <SectionTitle>Hosting access</SectionTitle>
+          {access?.isAdmin || access?.freeHosting ? (
+            <Card><Text style={styles.body}>You can host games. No access code needed.</Text></Card>
+          ) : (
+            <>
+              {access?.active && access.expiresAt ? (
+                <Card><Text style={styles.body}>You can host games until {new Date(access.expiresAt).toLocaleString()}.</Text></Card>
+              ) : null}
+              <HostAccess
+                intro={access?.active ? "Have another code? Enter it to add more time." : "Enter your access code to host games."}
+                onRedeemed={loadAccess}
+              />
+            </>
+          )}
+        </>
       )}
 
       <SectionTitle>Playing</SectionTitle>
